@@ -1,9 +1,10 @@
 # External gate import candidate
 
-Engine/package `0.2.0`, config/report schema `2`, launcher/adapter protocol `2`,
-policy `0.1` unchanged. This is the bounded slice in
-[decision 0004](decisions/0004-external-import-slice.md), qualified with invented
-records only. No real producer/controller, enforced environment, Linux run,
+Engine/package `0.2.1`, config/report schema `2`, launcher/adapter protocol `2`,
+policy `0.1` unchanged. This corrects the bounded slice in
+[decision 0004](decisions/0004-external-import-slice.md). Qualification of the new
+0.2.1 bytes is pending; historical invented-record evidence belongs to 0.2.0. The separate historical fixture record covers its frozen 0.2.0
+artifact; it does not qualify these new bytes. No consumer producer/controller, enforced environment, Linux run,
 consumer install/adoption, release or hosted artifact publication is established.
 The existing v1 execution entry and earlier source branches/local artifacts are
 separate. No old 600-second execution cap changed.
@@ -22,7 +23,7 @@ environment identities, consumed-input mechanism, effects, required controls,
 selected refs and ceilings. See [the schema](../quality/schemas/external-config.json)
 and [invented factories](../tests/external_support.py). They are examples of
 validator inputs, not a provisioned producer or consumer configuration. The base
-lock uses the existing six lock fields with `schema_version: 2`, `version: 0.2.0`,
+lock uses the existing six lock fields with `schema_version: 2`, `version: 0.2.1`,
 `policy_version: 0.1`, publisher `orlenko/software-quality`, and separately approved
 full source/artifact identities. Head-side policy, lock and launcher are data.
 
@@ -56,7 +57,7 @@ supply trust.
 
 ```sh
 python3 -I -S /approved/toolkit/quality_external_launch.py --adapter-protocol 2 install \
-  --artifact /approved/artifacts/software-quality-external.pyz \
+  --artifact /approved/artifacts/software-quality-external-0.2.1.pyz \
   --source FULL_TOOLKIT_COMMIT --sha256 APPROVED_ARTIFACT_SHA256 \
   --cache /owner/quality-cache
 
@@ -150,6 +151,14 @@ valid failure is retained. Reports are derived from stored facts. Aged positive
 facts become incomplete. Replay protection covers this intact local state only;
 copying/deleting/restoring the ledger defeats that local assumption.
 
+Validated same-request failure knowledge survives handled cancellation through
+final clock, save and CLI delivery, returning exit 1 even when persistence or output
+is unconfirmed. Without that knowledge cancellation returns incomplete/2. Different
+immutable requests cannot activate or mutate another plan. Recovery does not consume
+unpublished positive receipts; visible replacements are reconciled rather than
+rolled back. Returned recovery reports identify unconfirmed persistence. Delivery
+is bounded, and a full/broken channel can prevent a complete report.
+
 Handled interruption attempts a final atomic record; hard kill can leave only the
 last completed checkpoint. Resume with the same plan and receipt bytes, never by
 rerunning a gate. Corrupt state is refused rather than reset or overwritten.
@@ -170,5 +179,6 @@ never an executable producer/controller. Relevant shared-v1-default regression
 checks cover parameterized pins, strict parsing and extracted evidence helpers.
 No unaffected old artifact suite is rerun merely to inflate counts.
 
-Exact source/tree/package digest, test results and independent adversarial review
-are recorded in the [qualification record](reviews/external-import-v02.md).
+The [original qualification record](reviews/external-import-v02.md) records historical
+0.2.0 identities, results and independent review. It does not qualify 0.2.1. The new
+source/tree/package identities and qualification remain separate pending evidence.

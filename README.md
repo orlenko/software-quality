@@ -2,8 +2,12 @@
 
 A shared development standard and a versioned quality runner for humans and coding agents.
 
-The initial engine `0.1.0` is a pilot candidate, with policy `0.1` and schema `1`.
-There is no published release or verified consumer adoption.
+The corrected engine `0.1.1` is a pilot candidate, with policy `0.1` and schema `1`.
+There is no published release or verified consumer adoption. The previously frozen
+0.1.0/0.2.0 artifacts and adapter 0.1.0 stay unchanged and are held from new adoption
+because of process identity and failure-finalization defects. See
+[the correction design](docs/decisions/0006-owned-process-finalization.md); new
+local candidates require their own reviewed source and qualification evidence.
 
 ## Start here
 
@@ -16,14 +20,16 @@ Read [AGENTS.md](AGENTS.md), then [HANDOFF.md](HANDOFF.md). The candidate [devel
 
 ## Safe tests and build
 
-Requires Python 3.11+ on macOS/Linux and Git, with no third-party packages. Windows
-execution is unsupported. Use a trusted interpreter with **`-I -S`**: without those
+Requires Python 3.11+ on POSIX and Git, with no third-party packages. Execution
+requires a usable nonreaping `waitid`/`WNOWAIT` capability and the default SIGCHLD
+policy; a benign interpreter probe runs before any target/helper launch. Unsupported
+capability refuses execution. Windows execution is unsupported. Use a trusted interpreter with **`-I -S`**: without those
 flags, Python startup code can execute before a script can refuse it.
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/build.py --output dist/software-quality.pyz
-python3 -I -S tools/test.py --artifact dist/software-quality.pyz
+python3 -I -S tools/build.py --output dist/software-quality-0.1.1.pyz
+python3 -I -S tools/test.py --artifact dist/software-quality-0.1.1.pyz
 ```
 
 Tests use invented disposable repositories and recorded reviewer responses, without
@@ -51,7 +57,7 @@ SOURCE=REPLACE_WITH_APPROVED_FULL_SOURCE_COMMIT
 DIGEST=REPLACE_WITH_APPROVED_ARTIFACT_SHA256
 CACHE=/path/to/private/quality-cache
 python3 -I -S "$TOOLKIT/quality_launch.py" install \
-  --artifact "$TOOLKIT/dist/software-quality.pyz" \
+  --artifact "$TOOLKIT/dist/software-quality-0.1.1.pyz" \
   --sha256 "$DIGEST" --source "$SOURCE" --cache "$CACHE"
 ```
 
@@ -152,7 +158,9 @@ valid open blocker. Exit `2`: incomplete evidence/refused input. Failure wins ov
 incomplete. Dirty/moving source, absent evidence/capability, invalid review, timeout
 and unfinished stages never pass. Unknown/duplicate review records cannot erase a
 valid blocker. An initial report survives hard termination. Handled interruption
-stops the owned process group; SIGKILL may leave orphaned descendants. Inspect a
+requests cancellation through owned process groups. Signals require an unreaped
+identity; cleanup requires an actual wait and separate empty-group observation.
+Uncertain cleanup remains incomplete. SIGKILL may leave orphaned descendants. Inspect a
 stale run before repeating commands with non-idempotent effects.
 
 ## Adapters and limits
@@ -183,16 +191,17 @@ Newly authored material is available under the [MIT license](LICENSE).
 
 The separate [external gate candidate](docs/external-import-v02.md) implements
 schema2 validation of one already-known committed target and externally supplied
-canonical-gate/controller evidence. It never runs that gate. Engine `0.2.0`,
+canonical-gate/controller evidence. It never runs that gate. Engine `0.2.1`,
 policy `0.1` and protocol2 require their own accepted pins; v1 inputs are rejected.
-This work-branch candidate is not merged, released or installed in any consumer.
+This work-branch candidate has no release or consumer installation. Its source
+integration and local artifact qualification are separate gates.
 Synthetic qualification does not establish a real producer, controller or adoption.
 
 ```sh
 python3 -I -S tools/test_external.py
 # Requires a clean reviewed source commit; output must not already exist.
-python3 -I -S tools/build_external.py --output dist/software-quality-external.pyz
-python3 -I -S tools/test_external.py --artifact dist/software-quality-external.pyz
+python3 -I -S tools/build_external.py --output dist/software-quality-external-0.2.1.pyz
+python3 -I -S tools/test_external.py --artifact dist/software-quality-external-0.2.1.pyz
 ```
 
 The [owned real-executed fixture qualification](docs/reviews/external-fixture-qualification-v01.md)

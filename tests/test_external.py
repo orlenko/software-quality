@@ -13,10 +13,10 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from quality_trust import EXTERNAL_VERSION, Git, Invalid, artifact, canonical, lock_value, parse_json, sha
+from quality_trust import VERSION, EXTERNAL_VERSION, Git, Invalid, artifact, canonical, lock_value, parse_json, sha
 from quality.external_clock import Reading
 from quality.external_model import bound, continuity, registry, observer_bound
-from quality.external_store import checkpoint, create, import_records, load, receive, state_root
+from quality.external_store import ImportOutcome, checkpoint, create, import_records, load, receive, state_root
 from quality.schema import checked
 from tests.external_support import D, Fixture, ROOT, config
 from tools.build_external import archive, payload
@@ -24,7 +24,7 @@ from tools.build_external import archive, payload
 ARTIFACT: Path | None = None
 
 
-class ExternalTests(unittest.TestCase):
+class ExternalCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.package_temp = tempfile.TemporaryDirectory()
@@ -56,6 +56,7 @@ class ExternalTests(unittest.TestCase):
         checked("external-report", output["report"])
         return output["report"]
 
+class ExternalTests(ExternalCase):
     def test_bound_success_and_thin_shim(self) -> None:
         plan = self.fx.plan(shim=True)
         envelope, observer = self.fx.facts(plan)
@@ -266,8 +267,12 @@ class ExternalTests(unittest.TestCase):
         result, output = self.fx.receive(plan, envelope, observer)
         self.assert_result(result, output, "incomplete")
         self.fx.head = self.fx.commit()
+        before = (self.fx.state / plan["plan_id"] / "record.json").read_bytes()
         result, output = self.fx.receive(plan, envelope, observer)
-        self.assert_result(result, output, "incomplete")
+        # A different immutable request cannot activate or mutate this ledger.
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIsNone(output)
+        self.assertEqual((self.fx.state / plan["plan_id"] / "record.json").read_bytes(), before)
         self.fx.git("update-ref", "refs/heads/main", self.fx.base)
         self.fx.git("reset", "--hard", self.fx.base)
         self.fx.head = self.fx.base
@@ -378,7 +383,7 @@ class ExternalTests(unittest.TestCase):
             with self.assertRaises(Invalid):
                 registry(bad)
         pin = {"schema_version": 1, "publisher": "orlenko/software-quality", "source": "1" * 40,
-               "artifact_sha256": D, "version": "0.1.0", "policy_version": "0.1"}
+               "artifact_sha256": D, "version": VERSION, "policy_version": "0.1"}
         self.assertEqual(lock_value(canonical(pin)), pin)
         with self.assertRaises(Invalid):
             lock_value(canonical(pin), version=EXTERNAL_VERSION, schema_version=2)
@@ -543,37 +548,42 @@ class ExternalTests(unittest.TestCase):
             self.assertEqual(durable["report"]["overall"], "fail")
 
     def test_actual_cli_interrupt_after_checkpoint_preserves_failure(self) -> None:
-        plan = self.fx.plan()
-        envelope, _ = self.fx.facts(plan, 7)
-        # Eight bounded records provide independent parsing/checkpoint work.
-        for index in range(7):
-            extra = deepcopy(envelope["records"][0])
-            extra["invocation_id"] = "invented-extra-" + str(index)
-            extra["note"] = "invented " * 100
-            envelope["records"].append(extra)
-        args = self.fx.inputs(envelope, None)
-        package = self.fx.cache / (self.digest + ".pyz")
-        command = [sys.executable, "-I", "-S", str(package), "import", "--repo", str(self.fx.repo),
-                   "--base", self.fx.base, "--head", self.fx.head, "--identity", "example/invented", "--state", str(self.fx.state),
-                   "--artifact-sha256", self.digest, "--source", self.source, "--trusted-head", self.fx.head,
-                   "--plan", plan["plan_id"], *args]
-        path = self.fx.state / plan["plan_id"] / "record.json"
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={"PATH": os.defpath, "LC_ALL": "C"}) as process:
-            deadline = time.monotonic() + 20
-            observed = False
-            while time.monotonic() < deadline and process.poll() is None:
-                state = parse_json(path.read_bytes())
-                if state["failure"]:
-                    observed = True
-                    process.send_signal(signal.SIGTERM)
-                    break
-                time.sleep(0.001)
-            output, error = process.communicate(timeout=20)
-            self.assertTrue(observed, error.decode())
-        _, state = load(self.fx.state, plan["plan_id"])
-        self.assertEqual(state["report"]["overall"], "fail")
-        result, output = self.fx.receive(plan, envelope, None)
-        self.assert_result(result, output, "fail")
+        for code in (0, 7):
+            plan = self.fx.plan()
+            envelope, _ = self.fx.facts(plan, code)
+            # Eight bounded records provide independent parsing/checkpoint work.
+            for index in range(7):
+                extra = deepcopy(envelope["records"][0])
+                extra["invocation_id"] = "invented-extra-" + str(index)
+                extra["note"] = "invented " * 100
+                envelope["records"].append(extra)
+            args = self.fx.inputs(envelope, None)
+            package = self.fx.cache / (self.digest + ".pyz")
+            command = [sys.executable, "-I", "-S", str(package), "import", "--repo", str(self.fx.repo),
+                       "--base", self.fx.base, "--head", self.fx.head, "--identity", "example/invented", "--state", str(self.fx.state),
+                       "--artifact-sha256", self.digest, "--source", self.source, "--trusted-head", self.fx.head,
+                       "--plan", plan["plan_id"], *args]
+            path = self.fx.state / plan["plan_id"] / "record.json"
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={"PATH": os.defpath, "LC_ALL": "C"}) as process:
+                deadline = time.monotonic() + 20
+                observed = False
+                while time.monotonic() < deadline and process.poll() is None:
+                    state = parse_json(path.read_bytes())
+                    if state["failure"] if code else state["original"]:
+                        observed = True
+                        process.send_signal(signal.SIGTERM)
+                        break
+                    time.sleep(0.001)
+                output, error = process.communicate(timeout=20)
+                self.assertTrue(observed, error.decode())
+                self.assertEqual(process.returncode, 1 if code else 2, error.decode())
+                delivered = parse_json(output)
+                self.assertTrue(any("import-interrupted" in row["reason"] for row in delivered["report"]["stages"]),
+                                "current invocation did not demonstrate handled cancellation")
+            _, state = load(self.fx.state, plan["plan_id"])
+            self.assertEqual(state["report"]["overall"], "fail" if code else "incomplete")
+            result, output = self.fx.receive(plan, envelope, None)
+            self.assert_result(result, output, "fail" if code else "incomplete")
 
     def test_observer_clock_pairs_must_describe_supported_instants(self) -> None:
         for code in (0, 7):
@@ -629,3 +639,169 @@ class ExternalTests(unittest.TestCase):
         self.assertEqual(evidence.verdict([evidence.stage("failure", "fail"), evidence.stage("gap")]), "fail")
         with self.assertRaises(Invalid):
             parse_json(b'{"invented":1,"invented":2}')
+
+
+class FinalizationTests(ExternalCase):
+    def receive_local(self, plan, envelope, *, final_clock=None, outcome=None):
+        args = self.fx.inputs(envelope, None)
+        clock = self.fx.clock(plan)
+        return receive(self.fx.state, plan["plan_id"], Git(self.fx.repo), plan["context"], plan["registry"], clock,
+            [self.fx.repo, self.fx.cache, self.fx.state], evidence=Path(args[1]), evidence_sha256=args[3],
+            producer=args[5], final_clock=final_clock or (lambda: clock), outcome=outcome)
+
+    def test_final_clock_interruption_returns_current_failure_or_incomplete(self):
+        for code in (0, 7):
+            plan = self.fx.plan()
+            envelope, _ = self.fx.facts(plan, code)
+            def interrupted():
+                raise KeyboardInterrupt
+            state = self.receive_local(plan, envelope, final_clock=interrupted)
+            self.assertEqual(state["report"]["overall"], "fail" if code else "incomplete")
+            self.assertIn("import-interrupted", state["request_gaps"])
+            _, stored = load(self.fx.state, plan["plan_id"])
+            self.assertEqual(stored["report"]["overall"], state["report"]["overall"])
+
+    def test_uncommitted_positive_not_consumed_during_interrupted_recovery(self):
+        plan = self.fx.plan()
+        envelope, _ = self.fx.facts(plan)
+        real_replace = __import__("os").replace
+        fired = False
+        def before_publish(source, destination):
+            nonlocal fired
+            if not fired:
+                fired = True
+                raise KeyboardInterrupt
+            return real_replace(source, destination)
+        with patch("quality.evidence.os.replace", before_publish):
+            state = self.receive_local(plan, envelope)
+        self.assertFalse(state["original"])
+        self.assertEqual(state["report"]["overall"], "incomplete")
+        _, stored = load(self.fx.state, plan["plan_id"])
+        self.assertFalse(stored["original"])
+
+    def test_published_positive_reconciled_without_rollback(self):
+        plan = self.fx.plan()
+        envelope, _ = self.fx.facts(plan)
+        real_replace = __import__("os").replace
+        fired = False
+        def after_publish(source, destination):
+            nonlocal fired
+            result = real_replace(source, destination)
+            if not fired:
+                fired = True
+                raise KeyboardInterrupt
+            return result
+        with patch("quality.evidence.os.replace", after_publish):
+            state = self.receive_local(plan, envelope)
+        self.assertTrue(state["original"])
+        self.assertEqual(state["report"]["overall"], "incomplete")
+        _, stored = load(self.fx.state, plan["plan_id"])
+        self.assertEqual(stored["original"], state["original"])
+
+    def test_known_failure_survives_save_before_and_after_publication(self):
+        from quality.evidence import SaveFailure
+        for phase in ("file-sync", "replace", "sync", "cleanup"):
+            plan = self.fx.plan()
+            envelope, _ = self.fx.facts(plan, 7)
+            if phase == "file-sync":
+                manager = patch("quality.evidence.os.fsync", side_effect=OSError("invented before publication fsync"))
+            elif phase == "replace":
+                manager = patch("quality.evidence.os.replace", side_effect=OSError("invented before publication"))
+            elif phase == "sync":
+                manager = patch("quality.evidence.sync_directory", side_effect=OSError("invented after publication"))
+            else:
+                manager = patch("quality.evidence.Path.unlink", side_effect=OSError("invented temporary cleanup"))
+            outcome = ImportOutcome()
+            with manager:
+                state = self.receive_local(plan, envelope, outcome=outcome)
+            self.assertEqual(state["report"]["overall"], "fail")
+            self.assertTrue(outcome.failure)
+            if phase == "cleanup":
+                self.assertIn("temporary-cleanup-unconfirmed", state["request_gaps"])
+            else:
+                self.assertIn("state-persistence-unconfirmed", state["request_gaps"])
+            _, stored = load(self.fx.state, plan["plan_id"])
+            self.assertEqual(bool(stored["failure"]), phase not in ("replace", "file-sync"))
+
+    def test_unbound_or_mismatched_request_cannot_activate_known_failure(self):
+        plan = self.fx.plan()
+        envelope, _ = self.fx.facts(plan, 7)
+        envelope["records"][0]["consumed"]["origin_tree"] = "f"*40
+        state = self.receive_local(plan, envelope)
+        self.assertEqual(state["report"]["overall"], "incomplete")
+        self.assertFalse(state["failure"])
+        envelope, _ = self.fx.facts(plan, 7)
+        self.receive_local(plan, envelope)
+        outcome = ImportOutcome()
+        wrong = {key: plan["context"][key] for key in ("repository", "base", "head", "artifact_sha256", "toolkit_source")}
+        wrong["head"] = "f"*40
+        with self.assertRaises(Invalid):
+            receive(self.fx.state, plan["plan_id"], Git(self.fx.repo), plan["context"], plan["registry"], self.fx.clock(plan),
+                    [self.fx.repo,self.fx.cache,self.fx.state], request=wrong, outcome=outcome)
+        self.assertIsNone(outcome.state)
+        self.assertIsNone(outcome.failure)
+
+    def test_changed_unpersisted_recovery_report_marks_durability_gap(self):
+        plan = self.fx.plan()
+        envelope, _ = self.fx.facts(plan, 7)
+        outcome = ImportOutcome()
+        self.receive_local(plan, envelope, outcome=outcome)
+        self.assertTrue(outcome.durable)
+        before = (self.fx.state/plan["plan_id"]/"record.json").read_bytes()
+        state = outcome.recover("report-output-unavailable", persist=False)
+        self.assertFalse(outcome.durable)
+        self.assertIn("state-persistence-unconfirmed", state["request_gaps"])
+        self.assertEqual(state["report"]["overall"], "fail")
+        self.assertEqual((self.fx.state/plan["plan_id"]/"record.json").read_bytes(), before)
+
+    def test_actual_package_cli_final_clock_interrupt_exit_not_just_retry(self):
+        for code in (0, 7):
+            plan = self.fx.plan()
+            envelope, _ = self.fx.facts(plan, code)
+            inputs = self.fx.inputs(envelope, None)
+            package = self.fx.cache/(self.digest+".pyz")
+            argv = [str(package),"import","--repo",str(self.fx.repo),"--base",self.fx.base,"--head",self.fx.head,
+                    "--identity","example/invented","--state",str(self.fx.state),"--artifact-sha256",self.digest,
+                    "--source",self.source,"--trusted-head",self.fx.head,"--plan",plan["plan_id"],*inputs]
+            driver = self.fx.root/("fault-"+str(code)+".py")
+            driver.write_text("""import sys
+from unittest.mock import patch
+sys.path.insert(0,sys.argv[1])
+from quality.external_cli import main
+from quality.external_store import receive as actual_receive
+sys.argv=sys.argv[1:]
+def interrupted(): raise KeyboardInterrupt
+def invoke(*args,**kwargs):
+    kwargs['final_clock']=interrupted
+    return actual_receive(*args,**kwargs)
+with patch('quality.external_cli.receive',invoke):
+    raise SystemExit(main())
+""")
+            result = subprocess.run([sys.executable,"-I","-S",str(driver),*argv],env={"PATH":os.defpath,"LC_ALL":"C"},capture_output=True,text=True,timeout=30)
+            output = parse_json(result.stdout.encode())
+            self.assert_result(result, output, "fail" if code else "incomplete")
+            self.assertIn("import-interrupted", [s["reason"] for s in output["report"]["stages"]][1])
+
+    def test_actual_package_output_error_then_diagnostic_interrupt_retains_exit(self):
+        for code in (0, 7):
+            plan = self.fx.plan()
+            envelope, _ = self.fx.facts(plan, code)
+            inputs = self.fx.inputs(envelope, None)
+            package = self.fx.cache/(self.digest+".pyz")
+            argv = [str(package),"import","--repo",str(self.fx.repo),"--base",self.fx.base,"--head",self.fx.head,
+                    "--identity","example/invented","--state",str(self.fx.state),"--artifact-sha256",self.digest,
+                    "--source",self.source,"--trusted-head",self.fx.head,"--plan",plan["plan_id"],*inputs]
+            driver = self.fx.root/("delivery-fault-"+str(code)+".py")
+            driver.write_text("""import sys
+from unittest.mock import patch
+sys.path.insert(0,sys.argv[1])
+from quality.external_cli import main
+sys.argv=sys.argv[1:]
+with patch('quality.external_cli.emit',side_effect=OSError('invented output error')), patch('quality.external_cli.write_output',side_effect=KeyboardInterrupt):
+    raise SystemExit(main())
+""")
+            result = subprocess.run([sys.executable,"-I","-S",str(driver),*argv],env={"PATH":os.defpath,"LC_ALL":"C"},capture_output=True,text=True,timeout=30)
+            self.assertEqual(result.returncode,1 if code else 2,result.stderr)
+            self.assertEqual(result.stdout,"")
+            _,stored=load(self.fx.state,plan["plan_id"])
+            self.assertEqual(stored["report"]["overall"],"fail" if code else "incomplete")

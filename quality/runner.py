@@ -6,7 +6,7 @@ import sys
 from typing import Any
 import uuid
 
-from quality_trust import (MAX_JSON, Git, Invalid, POLICY, canonical, lock_value,
+from quality_trust import (write_output, Cancellation, MAX_JSON, Git, Invalid, POLICY, canonical, lock_value,
                            parse_json, regular_bytes, sha, snapshot_stable, within)
 from quality.process import CommandInterrupted, execute
 from quality.schema import checked
@@ -130,9 +130,11 @@ def run(args: Any, artifact_sha: str, source: str, experimental: bool) -> tuple[
             "overall": "incomplete"}
         report_path = directory / "report.json"
         save(report_path, report)
+        args._validated_report, args._report_path = report, report_path
         # Surface the effective effects and response context before any target execution.
-        print(canonical({"run_id": run_id, "context": context, "effective_plan": config,
-                         "execution_requested": args.execute_trusted}).decode(), flush=True)
+        write_output(canonical({"run_id": run_id, "context": context, "effective_plan": config,
+                               "execution_requested": args.execute_trusted}),
+                     getattr(args, "cancellation", Cancellation()))
         try:
             execute_allowed = (args.command == "check" and args.execute_trusted
                                and config["execution"]["trusted_local"]
@@ -150,7 +152,7 @@ def run(args: Any, artifact_sha: str, source: str, experimental: bool) -> tuple[
                         expected = git.export(head, snapshot)
                         if not snapshot_stable(snapshot, expected):
                             raise Invalid("snapshot-changed-before-check")
-                        status, outcome, code, output_status, output_reason = execute(check, snapshot, directory / ("state-" + check["id"]), directory / log_name)
+                        status, outcome, code, output_status, output_reason = execute(check, snapshot, directory / ("state-" + check["id"]), directory / log_name, getattr(args, "cancellation", None))
                         report["stages"][index] = stage("check:" + check["id"], status, outcome, code, log_name)
                         stable = snapshot_stable(snapshot, expected)
                         report["stages"][index + 1] = stage("snapshot:" + check["id"], "pass" if stable else "incomplete",

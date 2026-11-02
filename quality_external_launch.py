@@ -12,7 +12,7 @@ if not sys.flags.isolated or not sys.flags.no_site:
     raise SystemExit("use python3 -I -S quality_external_launch.py")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from quality_trust import EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, lock_value, regular_bytes, within, outside_path
+from quality_trust import Cancellation, OwnedProcess, write_output, diagnostic, EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, lock_value, regular_bytes, within, outside_path
 
 
 def verify(data: bytes, digest: str, source: str) -> None:
@@ -41,6 +41,13 @@ def main() -> int:
             child.add_argument("--" + prefix + "-sha256")
             child.add_argument("--approved-" + actor)
     args = parser.parse_args()
+    cancellation = Cancellation()
+    with cancellation.handlers():
+        return launch_main(args, cancellation)
+
+
+def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
+    owned: OwnedProcess | None = None
     try:
         if not sys.flags.isolated or not sys.flags.no_site or os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("unsupported-runtime")
@@ -60,8 +67,10 @@ def main() -> int:
                     stream.write(data)
                     stream.flush()
                     os.fsync(stream.fileno())
-            print("installed " + args.sha256)
-            return 0
+            if cancellation.requested:
+                raise KeyboardInterrupt
+            write_output(("installed " + args.sha256 + "\n").encode(), cancellation)
+            return 2 if cancellation.requested else 0
         repo = args.repo.resolve(strict=True)
         tool = Path(__file__).resolve().parent
         outside_path(Path(__file__), [repo])
@@ -86,24 +95,22 @@ def main() -> int:
             if value is not None:
                 # Retain lexical paths: the core checks both lexical and resolved roots.
                 command.extend(["--" + field.replace("_", "-"), str(value)])
-        with subprocess.Popen(command, env={"PATH": os.defpath, "LC_ALL": "C"}) as process:
-            def forward(signum: int, frame: object) -> None:
-                try:
-                    process.send_signal(signum)
-                except ProcessLookupError:
-                    pass
-            previous = signal.signal(signal.SIGTERM, forward)
-            try:
-                try:
-                    code = process.wait()
-                except KeyboardInterrupt:
-                    forward(signal.SIGINT, None)
-                    code = process.wait()
-            finally:
-                signal.signal(signal.SIGTERM, previous)
+        owned = OwnedProcess(cancellation)
+        try:
+            owned.start(command, env={"PATH": os.defpath, "LC_ALL": "C"})
+            code = owned.wait()
+        finally:
+            cleaned = owned.close()
+        if code == 1:
+            return 1
+        if cancellation.requested or not cleaned:
+            diagnostic("incomplete: owned-launch-cancelled-or-cleanup-unverified", cancellation)
+            return 2
         return code if code in (0, 1, 2) else 2
-    except (Invalid, OSError, ValueError, subprocess.SubprocessError):
-        print("incomplete: protocol2-launch-unavailable (check approved pins and prerequisites)", file=sys.stderr)
+    except (Invalid, OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
+        if owned is not None and owned.code == 1:
+            return 1
+        diagnostic("incomplete: protocol2-launch-unavailable (check approved pins and prerequisites)", cancellation)
         return 2
 
 

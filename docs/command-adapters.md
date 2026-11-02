@@ -1,8 +1,8 @@
 # Command/context candidate
 
-The adapter is version `0.1.0`, protocol `1`; its
-[compatibility record](../adapters/compatibility.json) identifies the tested engine
-and unchanged pinned artifact. This is a software-quality source/skill bundle,
+The adapter is version `0.1.1`, protocol `1`; its
+[compatibility record](../adapters/compatibility.json) will record the separately qualified runtime source and digest; these are pending
+until the new local candidate is qualified. This is a software-quality source/skill bundle,
 not an installed plugin, registered command or adopted consumer workflow.
 
 The [Codex template](../adapters/skills/cmd-quality/SKILL.md) uses `$cmd-quality`;
@@ -27,31 +27,25 @@ From a clean reviewed adapter-source checkout:
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/package_adapters.py --output dist/quality-adapters.zip
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1.zip
 python3 -I -S tools/test.py \
-  --artifact dist/software-quality.pyz --adapter-bundle dist/quality-adapters.zip
+  --artifact dist/software-quality-0.1.1.pyz --adapter-bundle dist/quality-adapters-0.1.1.zip
 ```
 
-The runner argument refers to the previously reviewed candidate, built from
-`74b9b498058b11a3d99409e2d1166cbf9d171e9e`, digest
-`9403401102f01d87991fb2de5405eff4b7012480c955e858b8bb0a0fa2bee6a2`.
-Keep/reproduce that artifact separately; packaging an adapter never builds or
-advances the accepted runner. The bundle contains `bin/`, `skills/`, shared workflow,
-compatibility, license and a source/file-digest manifest. It has no installer.
-Tests extract only the owned verified fixture bundle into disposable state and
-exercise its frontend plus the pinned runner. See
-[adapter evidence](reviews/command-adapters-v01.md) for actual source/bundle identities
-and the distinction between source tests, package checks and missing live-host proof.
+The runtime and adapter source identities are separate. Build the runtime from a
+reviewed source commit, qualify its actual bytes, then record that source and digest
+in the adapter compatibility metadata before building the adapter bundle. Packaging
+an adapter never advances a consumer's accepted pin. The bundle contains `bin/`,
+`skills/`, shared workflow, compatibility, license and source/file-digest manifest;
+it has no installer. Tests extract only the owned verified bundle into disposable
+state. The full shared trust/process closure must accompany the frontend.
 
-The recorded adapter candidate is built from source
-`5843cf3f1375c40338d0ca4338241641a4d5fee9`, bundle SHA-256
-`3f7f0bb6be8ced3d1e3f47e749449fcac0ef9923d4b56162f16ce9a5ff313142`.
-Reproduce exact bytes from that source commit; a newer documentation commit yields
-a different source/digest even when payload code is identical. No plugin installer
-or standalone local-registration installer is supplied. Copying only a skill
-directory breaks the shared resources; local unqualified names are documented host
-forms, not a tested install recipe for this bundle. The usable current entry is
-the explicit frontend below or direct use of the complete approved skill procedure.
+The previous adapter 0.1.0 bundle and core 0.1.0 artifact remain frozen historical
+objects. Their [original evidence](reviews/command-adapters-v01.md) stays historical;
+those affected routes are held from new adoption. New 0.1.1 bytes need separate
+qualification. No plugin installer or standalone registration installer is supplied.
+Copying only a skill directory breaks its shared resources. Local unqualified names
+are documented host forms, not a tested install recipe for this bundle.
 
 ## Explicit mode works offline
 

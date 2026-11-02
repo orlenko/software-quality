@@ -1,6 +1,7 @@
 """Trusted bootstrap primitives. No target imports, network or policy execution."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 import hashlib
 import io
 import json
@@ -8,13 +9,17 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import signal
+import select
 import stat
 import subprocess
+import sys
+import time
 import zipfile
-from typing import Any
+from typing import Any, Iterator
 
-VERSION = "0.1.0"
-EXTERNAL_VERSION = "0.2.0"
+VERSION = "0.1.1"
+EXTERNAL_VERSION = "0.2.1"
 POLICY = "0.1"
 PUBLISHER = "orlenko/software-quality"
 MAX_JSON = 2 * 1024 * 1024
@@ -248,3 +253,262 @@ def snapshot_stable(root: Path, expected: dict[str, tuple[str, int]]) -> bool:
         return True
     except (OSError, Invalid):
         return False
+
+
+class Cancellation:
+    """Owned request data. Signal handlers never reap or signal a child."""
+    def __init__(self) -> None:
+        self.signum: int | None = None
+        self.active = False
+
+    @property
+    def requested(self) -> bool:
+        return self.signum is not None
+
+    def request(self, signum: int, frame: object = None) -> None:
+        if self.signum is None:
+            self.signum = signum
+
+    @contextmanager
+    def handlers(self) -> Iterator[None]:
+        if self.active:
+            yield
+            return
+        previous: dict[int, Any] = {}
+        try:
+            for signum in (signal.SIGINT, signal.SIGTERM):
+                previous[signum] = signal.signal(signum, self.request)
+            self.active = True
+            yield
+        finally:
+            self.active = False
+            for signum, handler in previous.items():
+                signal.signal(signum, handler)
+
+
+class OwnedProcess:
+    """One new session, one unreaped identity, signals before explicit release.
+
+    Callers must hold Cancellation.handlers through spawn, cleanup and handoff.
+    Never expose a signal-capable Popen to an outside reaper.
+    """
+    _capability_verified = False
+
+    def __init__(self, cancellation: Cancellation) -> None:
+        self.cancellation = cancellation
+        self._process: subprocess.Popen[bytes] | None = None
+        self._authority = False
+        self._ended = False
+        self._unknown = False
+        self.reaped = False
+        self.code: int | None = None
+        self.cleanup_complete = False
+        self.signal_unavailable = False
+
+    @property
+    def pid(self) -> int:
+        if self._process is None:
+            raise Invalid("owned-process-not-started")
+        return self._process.pid
+
+    @property
+    def stdout(self) -> Any:
+        return self._process.stdout if self._process is not None else None
+
+    @staticmethod
+    def _status(info: Any, pid: int) -> int:
+        if info.si_pid != pid:
+            raise Invalid("owned-child-identity-mismatch")
+        if info.si_code == os.CLD_EXITED:
+            return int(info.si_status)
+        if info.si_code in (os.CLD_KILLED, os.CLD_DUMPED):
+            return -int(info.si_status)
+        raise Invalid("unsupported-child-observation")
+
+    @classmethod
+    def require_capability(cls, cancellation: Cancellation) -> None:
+        required = ("waitid", "P_PID", "WEXITED", "WNOHANG", "WNOWAIT", "CLD_EXITED", "CLD_KILLED", "CLD_DUMPED", "killpg")
+        if (os.name != "posix" or not cancellation.active
+                or not all(hasattr(os, name) for name in required)
+                or not callable(getattr(os, "waitid", None))
+                or signal.getsignal(signal.SIGCHLD) != signal.SIG_DFL):
+            raise Invalid("nonreaping-process-capability-unavailable")
+        if cls._capability_verified:
+            return
+        # Known bounded interpreter code only; no target and no unproved signal.
+        probe = cls(cancellation)
+        probe._spawn([sys.executable, "-I", "-S", "-c", "pass"],
+                     env={"PATH": os.defpath, "HOME": "/nonexistent", "LC_ALL": "C"},
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        valid = False
+        try:
+            until = time.monotonic() + 2
+            while time.monotonic() < until:
+                if probe.observe() is not None:
+                    valid = probe.code == 0
+                    break
+                time.sleep(0.005)
+        finally:
+            probe._authority = False
+            probe._ended = True
+            probe._reap(2)
+            if not probe.reaped and probe._process is not None:
+                # Unsupported waitid must not leak the known benign probe. This
+                # is a non-signaling owned wait, never authority to kill a PID.
+                until = time.monotonic() + 2
+                while time.monotonic() < until:
+                    try:
+                        pid, status = os.waitpid(probe.pid, os.WNOHANG)
+                    except OSError:
+                        break
+                    if pid == probe.pid:
+                        probe.reaped = True
+                        probe._process.returncode = os.waitstatus_to_exitcode(status)
+                        break
+                    time.sleep(0.005)
+        if not valid or not probe.reaped or probe._unknown:
+            raise Invalid("nonreaping-process-probe-incomplete")
+        cls._capability_verified = True
+
+    def _spawn(self, argv: list[str], **kwargs: Any) -> None:
+        if self._process is not None or self._ended:
+            raise Invalid("owned-process-already-started")
+        self._process = subprocess.Popen(argv, start_new_session=True, **kwargs)
+        self._authority = True
+
+    def start(self, argv: list[str], **kwargs: Any) -> None:
+        self.require_capability(self.cancellation)
+        if self.cancellation.requested:
+            raise KeyboardInterrupt
+        self._spawn(argv, **kwargs)
+
+    def observe(self) -> int | None:
+        if not self._authority or self._ended or self._process is None:
+            raise Invalid("owned-signal-authority-ended")
+        if self._process.returncode is not None:
+            self._authority = False
+            self._unknown = True
+            raise Invalid("owned-child-reaped-externally")
+        try:
+            info = os.waitid(os.P_PID, self.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            if info is not None:
+                self.code = self._status(info, self.pid)
+        except (OSError, Invalid, AttributeError, TypeError):
+            self._authority = False
+            self._unknown = True
+            raise Invalid("owned-child-observation-unavailable") from None
+        return self.code
+
+    def send(self, signum: int) -> bool:
+        self.observe()  # A completed WNOWAIT child still reserves its numeric ID.
+        if not self._authority:
+            return False
+        try:
+            os.killpg(self.pid, signum)
+            return True
+        except ProcessLookupError:
+            return True  # Attempt found no group; cleanup still needs own wait/absence.
+        except OSError:
+            self.signal_unavailable = True
+            return False  # EPERM is not absence; no Popen.kill/poll fallback.
+
+    def _reap(self, seconds: float) -> None:
+        if self._process is None or self.reaped or self._unknown:
+            return
+        until = time.monotonic() + seconds
+        while time.monotonic() < until:
+            try:
+                info = os.waitid(os.P_PID, self.pid, os.WEXITED | os.WNOHANG)
+                if info is not None:
+                    code = self._status(info, self.pid)
+                    self.reaped = True
+                    self.code = code
+                    self._process.returncode = code  # Only AFTER the real reaping wait.
+                    return
+            except (OSError, Invalid, AttributeError, TypeError):
+                self._unknown = True
+                return
+            time.sleep(0.005)
+
+    def close(self) -> bool:
+        if self._ended:
+            return self.cleanup_complete
+        try:
+            if self._process is not None and self._authority:
+                self.send(signal.SIGKILL)
+        finally:
+            # No later path may signal, including if the actual wait is interrupted.
+            self._authority = False
+            self._ended = True
+            self._reap(2)
+            if self._process is not None and self.reaped and not self._unknown:
+                until = time.monotonic() + 2
+                while True:
+                    try:
+                        os.killpg(self.pid, 0)  # Non-signaling observation only.
+                    except ProcessLookupError:
+                        self.cleanup_complete = True
+                        break
+                    except OSError:
+                        break
+                    if time.monotonic() >= until:
+                        break
+                    time.sleep(0.005)
+        return self.cleanup_complete
+
+    def wait(self, cancellation_grace: float = 35) -> int | None:
+        forwarded = False
+        until: float | None = None
+        try:
+            while self.observe() is None:
+                if self.cancellation.requested and not forwarded:
+                    self.send(self.cancellation.signum or signal.SIGINT)
+                    forwarded = True
+                    until = time.monotonic() + cancellation_grace
+                if until is not None and time.monotonic() >= until:
+                    break
+                time.sleep(0.01)
+        finally:
+            self.close()
+        return self.code
+
+
+class OutputUnavailable(OSError):
+    def __init__(self, partial: int) -> None:
+        super().__init__("bounded-output-unavailable")
+        self.partial = partial
+
+
+def write_output(data: bytes, cancellation: Cancellation, *, fd: int = 1,
+                 seconds: float = 2, known_failure: bool = False, allow_cancelled: bool = False) -> None:
+    """Bound delivery; never let a full pipe hide handled cancellation forever."""
+    offset = 0
+    blocking = os.get_blocking(fd)
+    try:
+        os.set_blocking(fd, False)
+        until = time.monotonic() + seconds
+        while offset < len(data):
+            if (cancellation.requested and not (known_failure or allow_cancelled)) or time.monotonic() >= until:
+                raise OutputUnavailable(offset)
+            if not select.select([], [fd], [], min(0.05, max(0, until-time.monotonic())))[1]:
+                continue
+            try:
+                written = os.write(fd, data[offset:offset+65536])
+            except BlockingIOError:
+                continue
+            if written <= 0:
+                raise OutputUnavailable(offset)
+            offset += written
+    except OSError as exc:
+        if isinstance(exc, OutputUnavailable):
+            raise
+        raise OutputUnavailable(offset) from exc
+    finally:
+        os.set_blocking(fd, blocking)
+
+
+def diagnostic(message: str, cancellation: Cancellation) -> None:
+    try:
+        write_output((message + "\n").encode(), cancellation, fd=2, seconds=0.1, known_failure=True)
+    except (OSError, KeyboardInterrupt):
+        pass

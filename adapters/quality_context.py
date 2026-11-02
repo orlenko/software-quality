@@ -27,7 +27,7 @@ else:
     print("incomplete adapter resource closure", file=sys.stderr)
     raise SystemExit(2)
 sys.path.insert(0, str(RESOURCE_ROOT))
-from quality_trust import Git, Invalid, MAX_JSON, OID, SAFE_PATH, canonical, parse_json, within
+from quality_trust import Cancellation, OwnedProcess, write_output, Git, Invalid, MAX_JSON, OID, SAFE_PATH, canonical, parse_json, within
 from quality.process import stop
 
 IDENTITY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9_.-]{0,99}\Z")
@@ -93,8 +93,7 @@ def metadata(args: Any, route: str, fields: list[str] | None = None) -> Any:
            "GH_NO_UPDATE_NOTIFIER": "1", "GH_NO_EXTENSION_UPDATE_NOTIFIER": "1",
            "GH_TELEMETRY": "false", "DO_NOT_TRACK": "1"}
     # Bound bytes during execution, retain no raw files, and own the helper group.
-    process = subprocess.Popen(command, cwd=HERE, env=env, stdin=subprocess.DEVNULL,
-                               stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, start_new_session=True)
+    process = OwnedProcess(args.cancellation)
     stopped = False
     cleaned = False
     def cleanup() -> bool:
@@ -106,12 +105,16 @@ def metadata(args: Any, route: str, fields: list[str] | None = None) -> Any:
 
     data = bytearray()
     try:
+        process.start(command, cwd=HERE, env=env, stdin=subprocess.DEVNULL,
+                      stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         assert process.stdout is not None
         with selectors.DefaultSelector() as selector:
             os.set_blocking(process.stdout.fileno(), False)
             selector.register(process.stdout, selectors.EVENT_READ)
             deadline = time.monotonic() + args.metadata_timeout
             while True:
+                if args.cancellation.requested:
+                    raise KeyboardInterrupt
                 if time.monotonic() >= deadline:
                     raise Invalid("metadata-timeout-use-explicit-ids")
                 for key, _ in selector.select(min(0.1, max(0, deadline - time.monotonic()))):
@@ -122,7 +125,7 @@ def metadata(args: Any, route: str, fields: list[str] | None = None) -> Any:
                         raise Invalid("metadata-output-limit-use-explicit-ids")
                     else:
                         data.extend(chunk)
-                if process.poll() is not None and not selector.get_map():
+                if process.observe() is not None and not selector.get_map():
                     break
         if not cleanup():
             raise Invalid("metadata-helper-cleanup-unverified")
@@ -130,7 +133,7 @@ def metadata(args: Any, route: str, fields: list[str] | None = None) -> Any:
         cleanup()
         if process.stdout is not None:
             process.stdout.close()
-    if process.returncode:
+    if process.code:
         raise Invalid("metadata-route-unavailable-use-explicit-ids")
     return parse_json(bytes(data))
 
@@ -162,26 +165,23 @@ def core_arguments(args: Any, head: str) -> list[str]:
     return command
 
 
-def launch(command: list[str]) -> tuple[int, bool]:
-    with subprocess.Popen(command, cwd=HERE, env={"PATH": SAFE_PATH, "LC_ALL": "C"}) as process:
-        try:
-            return process.wait(), False
-        except KeyboardInterrupt:
-            try:
-                process.send_signal(signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            return process.wait(), True
+def launch(command: list[str], cancellation: Cancellation) -> tuple[int, bool]:
+    owned = OwnedProcess(cancellation)
+    try:
+        owned.start(command, cwd=HERE, env={"PATH": SAFE_PATH, "LC_ALL": "C"})
+        code = owned.wait()
+    except (Invalid, OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
+        stop(owned)
+        return (owned.code if owned.code in (0, 1, 2) else 2), True
+    finally:
+        cleaned = stop(owned)
+    return (code if code in (0, 1, 2) else 2), cancellation.requested or not cleaned
 
 
 def frontend_exit(core_exit: int | None, context_complete: bool) -> int:
     if core_exit == 1:
         return 1
     return 0 if core_exit == 0 and context_complete else 2
-
-
-def interrupt(signum: int, frame: object) -> None:
-    raise KeyboardInterrupt
 
 
 def main() -> int:
@@ -208,9 +208,14 @@ def main() -> int:
     parser.add_argument("--review", type=Path)
     parser.add_argument("--review-sha256")
     args = parser.parse_args()
-    receipt: dict[str, Any] = {"adapter_protocol": 1, "adapter_version": "0.1.0", "target": None,
+    args.cancellation = Cancellation()
+    with args.cancellation.handlers():
+        return frontend_main(args)
+
+
+def frontend_main(args: argparse.Namespace) -> int:
+    receipt: dict[str, Any] = {"adapter_protocol": 1, "adapter_version": "0.1.1", "target": None,
         "core_exit": None, "context_status": "incomplete", "pr_freshness": "unverified", "reason": "not-started"}
-    signal.signal(signal.SIGTERM, interrupt)
     try:
         if not args.personal or not IDENTITY.fullmatch(args.identity):
             raise Invalid("explicit-personal-eligibility-and-identity-required")
@@ -274,7 +279,7 @@ def main() -> int:
         receipt["target"] = {"repository": args.identity, "base": args.base, "head": head,
                              "pr": asdict(selected) if selected else None,
                              "local_ref": branch[0] if branch else None, "local_head": branch[1] if branch else None}
-        code, interrupted = launch(core_arguments(args, head))
+        code, interrupted = launch(core_arguments(args, head), args.cancellation)
         receipt["core_exit"] = code
         if interrupted:
             raise Invalid("frontend-interrupted")
@@ -290,8 +295,19 @@ def main() -> int:
         receipt["reason"] = "frontend-interrupted"
     except (OSError, ValueError, subprocess.SubprocessError):
         receipt["reason"] = "context-prerequisite-unavailable-use-explicit-ids"
-    print("context " + canonical(receipt).decode(), end="", flush=True)
-    return frontend_exit(receipt["core_exit"], receipt["context_status"] == "complete")
+    code = frontend_exit(receipt["core_exit"], receipt["context_status"] == "complete")
+    if args.cancellation.requested and code != 1:
+        receipt.update(context_status="incomplete", reason="frontend-interrupted")
+        code = 2
+    try:
+        write_output(b"context " + canonical(receipt), args.cancellation, known_failure=code == 1, allow_cancelled=code == 2)
+    except (OSError, KeyboardInterrupt):
+        try:
+            write_output(b"incomplete: context delivery unavailable or partial\n", args.cancellation, fd=2, seconds=0.1, known_failure=True)
+        except (OSError, KeyboardInterrupt):
+            pass
+        return 1 if code == 1 else 2
+    return 1 if code == 1 else 2 if args.cancellation.requested else code
 
 
 if __name__ == "__main__":

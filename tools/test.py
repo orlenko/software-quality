@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 import sys
 import tempfile
@@ -18,6 +19,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact", type=Path, help="also exercise an externally built candidate")
     parser.add_argument("--adapter-bundle", type=Path, help="exercise a locally built adapter/skill bundle")
+    parser.add_argument("--match", help="run only test IDs matching this regular expression")
     args = parser.parse_args()
     # Test-only binding; never consulted by production code.
     import tests
@@ -40,6 +42,15 @@ if __name__ == "__main__":
                 path.write_bytes(data)
         tests.ADAPTER_ROOT = Path(bundle_directory.name)
     suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"), top_level_dir=str(ROOT))
+    if args.match:
+        pattern = re.compile(args.match)
+        def selected(items):
+            for item in items:
+                if isinstance(item, unittest.TestSuite):
+                    yield from selected(item)
+                elif pattern.search(item.id()):
+                    yield item
+        suite = unittest.TestSuite(selected(suite))
     if suite.countTestCases() == 0:
         raise SystemExit("no tests found")
     result = unittest.TextTestRunner(verbosity=2).run(suite)

@@ -1,6 +1,7 @@
 # Owned-process identity and failure finalization corrections
 
-Status: pre-implementation design for independent critique, 2026-11-02. Baseline
+Status: independently critiqued design; corrective implementation under local
+qualification, 2026-11-02. Baseline
 is `60a706165934b7730e04f76b928469de2f1b427e`; accepted policy 0.1 and prior rules
 remain binding. Source-main integration of that exact tree was cancelled after
 aggregate review found released process-group identity and late interruption

@@ -8,7 +8,7 @@ import subprocess
 import sys
 from typing import Any
 
-from quality_trust import canonical, parse_json, sha
+from quality_trust import EXTERNAL_VERSION, canonical, parse_json, sha
 from quality.external_clock import Reading
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +38,7 @@ class Fixture:
         self.write("README.txt", "Newly authored invented plain-text subject.\n")
         self.write(".quality/config.json", canonical(self.config))
         self.write(".quality/lock.json", canonical({"schema_version": 2, "publisher": "orlenko/software-quality",
-            "source": source, "artifact_sha256": digest, "version": "0.2.0", "policy_version": "0.1"}))
+            "source": source, "artifact_sha256": digest, "version": EXTERNAL_VERSION, "policy_version": "0.1"}))
         self.head = self.base = self.commit()
         result = self.command("install", "--artifact", str(package), "--sha256", digest,
                               "--source", source, "--cache", str(self.cache))

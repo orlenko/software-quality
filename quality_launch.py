@@ -11,7 +11,7 @@ import signal
 if not sys.flags.isolated or not sys.flags.no_site:
     raise SystemExit("invoke with a trusted Python 3.11+ interpreter and -I -S")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from quality_trust import (MAX_ARTIFACT, Git, Invalid, OID, artifact, lock_value,
+from quality_trust import (Cancellation, OwnedProcess, write_output, diagnostic, MAX_ARTIFACT, Git, Invalid, OID, artifact, lock_value,
                            regular_bytes, within)
 
 
@@ -36,6 +36,13 @@ def main() -> int:
         child.add_argument("--review", type=Path)
         child.add_argument("--review-sha256")
     args = parser.parse_args()
+    cancellation = Cancellation()
+    with cancellation.handlers():
+        return launch_main(args, cancellation)
+
+
+def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
+    owned: OwnedProcess | None = None
     try:
         if os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("unsupported-runtime")
@@ -53,8 +60,10 @@ def main() -> int:
                     stream.write(data)
                     stream.flush()
                     os.fsync(stream.fileno())
-            print("installed " + args.sha256)
-            return 0
+            if cancellation.requested:
+                raise KeyboardInterrupt
+            write_output(("installed " + args.sha256 + "\n").encode(), cancellation)
+            return 2 if cancellation.requested else 0
         repo = args.repo.resolve(strict=True)
         if within(Path(__file__), repo) or within(cache, repo) or within(args.state, repo):
             raise Invalid("trusted-paths-must-be-outside-target")
@@ -75,27 +84,25 @@ def main() -> int:
             command.extend(["--review", str(args.review.resolve())])
         if args.review_sha256:
             command.extend(["--review-sha256", args.review_sha256])
-        with subprocess.Popen(command, env={"PATH": os.defpath, "LC_ALL": "C"}) as process:
-            def forward(signum: int, frame: object) -> None:
-                try:
-                    process.send_signal(signum)
-                except ProcessLookupError:
-                    pass
-            previous = signal.signal(signal.SIGTERM, forward)
-            try:
-                try:
-                    code = process.wait()
-                except KeyboardInterrupt:
-                    forward(signal.SIGINT, None)
-                    code = process.wait()
-            finally:
-                signal.signal(signal.SIGTERM, previous)
+        owned = OwnedProcess(cancellation)
+        try:
+            owned.start(command, env={"PATH": os.defpath, "LC_ALL": "C"})
+            code = owned.wait()
+        finally:
+            cleaned = owned.close()
+        if code == 1:
+            return 1
+        if cancellation.requested or not cleaned:
+            diagnostic("incomplete: owned-launch-cancelled-or-cleanup-unverified", cancellation)
+            return 2
         if code not in (0, 1, 2):
-            print("incomplete: runner-terminated (inspect the initial run report)", file=sys.stderr)
+            diagnostic("incomplete: runner-terminated (inspect the initial run report)", cancellation)
             return 2
         return code
-    except (Invalid, OSError, ValueError, subprocess.SubprocessError):
-        print("incomplete: trusted-launch-failed (check pins, paths and prerequisites)", file=sys.stderr)
+    except (Invalid, OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
+        if owned is not None and owned.code == 1:
+            return 1
+        diagnostic("incomplete: trusted-launch-failed (check pins, paths and prerequisites)", cancellation)
         return 2
 
 

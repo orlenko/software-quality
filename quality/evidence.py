@@ -35,19 +35,46 @@ def verdict(stages: list[dict[str, Any]]) -> str:
     return "fail" if "fail" in values else "incomplete" if "incomplete" in values else "pass"
 
 
+class SaveFailure(OSError):
+    def __init__(self, published: bool | None, durable: bool, cleanup_failed: bool, interrupted: bool) -> None:
+        super().__init__("atomic-evidence-save-unconfirmed")
+        self.published = published
+        self.durable = durable
+        self.cleanup_failed = cleanup_failed
+        self.interrupted = interrupted
+
+
 def save(path: Path, report: dict[str, Any], schema: str = "report") -> None:
     checked(schema, report)
     temporary = path.with_name(".report-" + uuid.uuid4().hex)
+    published: bool | None = False
+    durable = cleanup_failed = interrupted = False
+    error: BaseException | None = None
     try:
         fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         with os.fdopen(fd, "wb") as stream:
             stream.write(canonical(report))
             stream.flush()
             os.fsync(stream.fileno())
+        published = None  # Publication becomes uncertain before the replacing syscall.
         os.replace(temporary, path)
+        published = True
         sync_directory(path.parent)
+        durable = True
+    except (OSError, ValueError, KeyboardInterrupt) as exc:
+        error = exc
+        interrupted = isinstance(exc, KeyboardInterrupt)
     finally:
-        temporary.unlink(missing_ok=True)
+        try:
+            temporary.unlink(missing_ok=True)
+        except (OSError, KeyboardInterrupt) as exc:
+            cleanup_failed = True
+            interrupted = interrupted or isinstance(exc, KeyboardInterrupt)
+            if error is None:
+                error = exc
+    if error is not None:
+        # A visible replacement is never rolled back after a sync/cleanup error.
+        raise SaveFailure(published, durable, cleanup_failed, interrupted) from error
 
 
 @contextmanager
