@@ -25,10 +25,10 @@ evidence primitives. Extract shared evidence helpers from the v1 orchestrator so
 the new package need not ship a target-execution route. Generalize only explicit
 artifact/lock identity parameters, retaining v1 defaults. A deterministic new ZIP
 contains only the external CLI/model/store, shared validation/inspection/storage,
-schema2 and unchanged policy/license. Its trusted outside-target bootstrap verifies
-the accepted-base lock and bytes before execution. A protocol2 shim only delegates.
+schema 2 and unchanged policy/license. Its trusted outside-target bootstrap verifies
+the accepted-base lock and bytes before execution. A protocol 2 shim only delegates.
 
-The schema2 registry has exactly one required whole gate: producer identity,
+The schema 2 registry has exactly one required whole gate: producer identity,
 canonical source/coverage/environment digests, accepted consumed-input mechanism,
 effects, required observer controls, selected Git refs, budget and import window.
 Other required privacy/review/product/index obligations are explicit unsupported
@@ -68,7 +68,7 @@ registry must include its accepted containment profile.
 The registry always requires deadline and cleanup observations for this slice;
 other declared mechanical controls are equally mandatory. Controls marked unknown,
 unavailable, manually asserted, wrong-profile or unapproved cannot pass. No required
-mechanical rule is weakened to preserve policy0.1.
+mechanical rule is weakened to preserve policy 0.1.
 
 Observer records bind the approved observer/profile/mechanism, producer invocation,
 exact plan/context/challenge and required control kinds. They must cover the full
@@ -79,7 +79,7 @@ The importer relies on separately approved source/digest, not self-authenticatio
 
 ## Data flow, effects and state
 
-`doctor` validates schema2/pin and known clean target, then writes one authoritative
+`doctor` validates schema 2/pin and known clean target, then writes one authoritative
 private plan/route record with a durable random challenge, context/registry digests,
 source snapshot and issuance time before printing it. No command is dispatched.
 Input files and state/cache/toolkit/target roots are separate; receipt bytes are
@@ -112,7 +112,7 @@ origin is not a validated failure for the requested target.
 
 Validate budget 1–3600 seconds and import window 1–900 seconds, with original
 start/finish/elapsed facts and plan binding. These are validation ceilings only:
-no external deadline is enforced by importing it, no old600-second cap changes,
+no external deadline is enforced by importing it, no old 600-second cap changes,
 and no real gate fit is claimed. Reimport never refreshes completion timestamps.
 Passed evidence ages to incomplete when its window expires; same-context persisted
 valid failure remains failure. Handled interruption writes known state when
@@ -142,7 +142,7 @@ termination versus failure, unknown cleanup/containment, interruption/recovery,
 corrupt/replayed/conflicting state and all deferred modes. No producer/target command
 is created or executed to generate a report. Test code may generate explicitly
 invented JSON records only. Package qualification exercises the actual new ZIP and
-protocol2 bootstrap/shim; relevant shared-primitive/v1-default regressions run without
+protocol 2 bootstrap/shim; relevant shared-primitive/v1-default regressions run without
 repeating unaffected old-artifact suites for counts.
 
 Source and new-package tests, independent adversarial code review/fix re-review,
@@ -153,7 +153,7 @@ hosted artifact publication or application operation is included.
 
 ## Independent critique/disposition
 
-Independent read-only native critique found the architecture and policy0.1 basis
+Independent read-only native critique found the architecture and policy 0.1 basis
 suitable after three corrections, all accepted: registry trust requirements cannot
 be removed by caller designation; independent observer source/profile/invocation
 and full interval/cleanup scope are required; and the clock model/order/uncertainty

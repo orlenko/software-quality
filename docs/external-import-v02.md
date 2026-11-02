@@ -5,8 +5,8 @@ policy `0.1` unchanged. This is the bounded slice in
 [decision 0004](decisions/0004-external-import-slice.md), qualified with invented
 records only. No real producer/controller, enforced environment, Linux run,
 consumer install/adoption, release or hosted artifact publication is established.
-The existing v1 execution entry and old published source references/artifacts are
-separate. No old600-second execution cap changed.
+The existing v1 execution entry and earlier source branches/local artifacts are
+separate. No old 600-second execution cap changed.
 
 ## Trust and supported subject
 
@@ -16,7 +16,7 @@ source identity and artifact digest through an already authenticated owner route
 A digest delivered beside arbitrary bytes cannot authenticate itself. No network,
 package dependency, automatic install or hosted fallback is used.
 
-The accepted **base** `.quality/config.json` is a strict schema2 registry of one
+The accepted **base** `.quality/config.json` is a strict schema 2 registry of one
 whole canonical gate, producer, observer/profile/mechanism, source/coverage/
 environment identities, consumed-input mechanism, effects, required controls,
 selected refs and ceilings. See [the schema](../quality/schemas/external-config.json)
@@ -76,11 +76,11 @@ python3 -I -S /approved/toolkit/quality_external_launch.py --adapter-protocol 2 
 ```
 
 `adapters/quality_external.py` in the same approved source checkout is a thin
-protocol2 delegation entry for these explicit arguments. There is no discovery,
+protocol 2 delegation entry for these explicit arguments. There is no discovery,
 skill registration or PR/provider call. Omit trusted designation only when the
 required containment route is available; omission never grants execution.
 
-`doctor` exits2/incomplete and durably writes a non-importable challenge record,
+`doctor` exits 2/incomplete and durably writes a non-importable challenge record,
 then samples issuance and atomically marks it issued before exposing
 its random challenge/context. It does not dispatch or execute anything. Give those
 identities to the already approved external route; do not fabricate or launch a
@@ -92,7 +92,7 @@ incomplete.
 ## Evidence and verdict
 
 [Producer envelope](../quality/schemas/external-envelope.json) protocol is
-`external-checks-v1`; this record format name is independent of launcher protocol2.
+`external-checks-v1`; this record format name is independent of launcher protocol 2.
 The [single supported record](../quality/schemas/external-record.json) binds
 plan/challenge/context, canonical gate, invocation, phase, actual consumed input
 mechanism, environment/origin, whole coverage, natural outcome, timing and effects.
@@ -119,20 +119,20 @@ insufficient. Synthetic success demonstrates validation rules only.
 
 Clocks must share the supported same-host/boot millisecond domain. Importer reads
 kernel boot metadata and its wall/monotonic clock, requires issuance before start,
-ordered finish before import, matching boot and at most2000ms continuity discrepancy. Producer facts include
+ordered finish before import, matching boot and at most 2000 ms continuity discrepancy. Producer facts include
 wall and monotonic start/finish, and original freshness must satisfy both clocks;
 a within-tolerance wall rollback cannot extend the import window. Every observer
 wall/monotonic pair must describe the same instant within the supported continuity
-model. Start must be at least1ms after issuance to avoid timestamp ambiguity.
-Observer scope conservatively includes1ms precision uncertainty and cleanup.
-Future/pre-challenge/reboot/rollback relationships fail closed. Budget1–3600 seconds
-and import window1–900 seconds are validation ceilings, not enforced deadlines or
+model. Start must be at least 1 ms after issuance to avoid timestamp ambiguity.
+Observer scope conservatively includes 1 ms precision uncertainty and cleanup.
+Future/pre-challenge/reboot/rollback relationships fail closed. Budget 1–3600 seconds
+and import window 1–900 seconds are validation ceilings, not enforced deadlines or
 claims of real gate fit. Reimport never renews original completion time.
 
 Reports label importer observations, operator assertions, external producer facts
-and external controller observations separately. Exit0/pass requires every row
-complete; exit1/fail means a validated bound naturally completed nonzero result;
-exit2/incomplete means missing/invalid/stale/unsupported evidence. Termination,
+and external controller observations separately. Exit 0/pass requires every row
+complete; exit 1/fail means a validated bound naturally completed nonzero result;
+exit 2/incomplete means missing/invalid/stale/unsupported evidence. Termination,
 wrapper error or an exit code alone cannot establish natural failure. Valid natural
 failure wins over missing controls/output/coverage, stale receipts, malformed extra
 records and later valid conflicting input. Invalid common JSON/frame cannot be
@@ -141,7 +141,7 @@ partially salvaged. A previous durable failure survives later invalid imports.
 ## Local state and recovery
 
 A half-issued challenge record is refused after interruption. The private state root uses per-target and per-plan advisory locks and one atomic,
-fsynced authoritative `PLAN_ID/record.json`, schema2, with a corruption-detection
+fsynced authoritative `PLAN_ID/record.json`, schema 2, with a corruption-detection
 hash. The hash detects accidental corruption, not owner tampering. Original input
 and the first valid natural failure are immutable separate slots. Bound failure is
 checkpointed before later record/control parsing. Exact-byte retry is idempotent;
@@ -154,7 +154,7 @@ Handled interruption attempts a final atomic record; hard kill can leave only th
 last completed checkpoint. Resume with the same plan and receipt bytes, never by
 rerunning a gate. Corrupt state is refused rather than reset or overwritten.
 Missing package/pin/runtime prerequisites can prevent the importer from opening
-the ledger; inspect its last record, and do not interpret a generic launcher exit2
+the ledger; inspect its last record, and do not interpret a generic launcher exit 2
 as erasing stored failure. Cleanup concerns importer temporary files only; no
 external process or producer artifact is managed.
 
