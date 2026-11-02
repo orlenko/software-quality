@@ -6,6 +6,8 @@ Prepared 2026-11-02. This is a documentation bootstrap for a dedicated quality-t
 
 Several personal software projects are developed concurrently by humans and agents coordinating through an orchestra. Their quality processes vary. Maintain shared development rules and reusable quality tooling in one public, tagged repository so improvements can be made consistently, without copying the full policy into every project.
 
+The development and rollout scope is personal projects only. Keep employer and client references, identities and assets out of the public repository and its metadata. This assignment uses personal repositories and generic newly authored material; accessing organizational repositories is outside its scope.
+
 The desired consumer experience is `/quality` or `$cmd_quality` processing the current PR through the same versioned runner. An explicit base/head mode must also support repositories that do not use PRs. Each consumer keeps a small configuration and lock containing local facts and the adopted version.
 
 ## Read and coordinate

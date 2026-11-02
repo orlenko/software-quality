@@ -10,6 +10,8 @@ Keep generic policy, schemas, orchestration and verdict semantics here. Consumer
 
 ## Public repository
 
+Development and orchestra rollout are scoped to personal projects. Keep employer and client identities, references, proprietary code, prompts, configurations and internal details out of public assets, including commit messages and discussions. Use personal project inputs and newly authored generic material.
+
 Use invented data and newly authored examples. Never publish secrets, private source or user content, internal research, private checkout paths, captured transcripts, or confidential organizational details in files, logs, commits, issues or reviews. Review the actual staged content and metadata before pushing. Keep local credentials, reports and private notes ignored.
 
 Ideas may inform new work; code, prompts and fixtures from other projects require their own redistribution rights and compatible licenses. Do not import private material as a shortcut.
