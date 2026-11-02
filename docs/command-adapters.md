@@ -1,7 +1,7 @@
 # Command/context candidate
 
 The adapter is version `0.1.2`, protocol `1`; its
-[compatibility record](../adapters/compatibility.json) will identify the separately qualified runtime source and digest after new qualification.
+[compatibility record](../adapters/compatibility.json) identifies the separately qualified runtime source and digest.
 [The path correction record](reviews/approved-path-fix-v01.md) records the new
 qualification; the earlier ownership correction stays historical. This is a software-quality source/skill bundle,
 not an installed plugin, registered command or adopted consumer workflow.
@@ -43,7 +43,7 @@ state. The full shared trust/process closure must accompany the frontend.
 
 The previous adapter 0.1.0 bundle and core 0.1.0 artifact remain frozen historical
 objects. Their [original evidence](reviews/command-adapters-v01.md) stays historical;
-those affected routes are held from new adoption. New 0.1.1 qualification is
+those affected routes are held from new adoption. Historical 0.1.1 qualification is
 recorded separately and does not establish adoption. No plugin installer or standalone registration installer is supplied.
 Copying only a skill directory breaks its shared resources. Local unqualified names
 are documented host forms, not a tested install recipe for this bundle.
@@ -52,8 +52,9 @@ The first local 0.1.1 bundle is also held: aggregate review found its advertised
 simple shim still bypassed owned cancellation. Historical
 `quality-adapters-0.1.1-relay-fixed.zip`, from source S3 in the ownership correction
 record, fixed that relay. Those exact S3 bytes remain frozen but are also held after
-the later path-selection finding. The new 0.1.2 candidate requires its own source/digest and qualification;
-no older file is silently replaced.
+the later path-selection finding. The replacement 0.1.2 bundle uses the exact A2
+source/digest in the path correction record; the initial 0.1.2 candidate stays held.
+No older file is silently replaced.
 
 ## Explicit mode works offline
 

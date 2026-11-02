@@ -1,0 +1,149 @@
+{
+  "adapter_source": "ac3e3e7e376c565d70cc53914fc458230d102465",
+  "adapter_tree": "2ce717bf5772069242d1002a1b9b87debf3a42d2",
+  "archives": {
+    "quality-adapters-0.1.2-root-alias.zip": {
+      "manifest": {
+        "adapter_protocol": 1,
+        "adapter_version": "0.1.2",
+        "files": {
+          "LICENSE": "f8df3bd21cd3f3a8e6cf43b2c2e09978a61a97a9b59ab5810bcf71a6cd4addb1",
+          "bin/quality.py": "4d597c4aad7d27986b999a9c02e59230b67287a820e3679bfdd0ddbceff6773a",
+          "bin/quality/__init__.py": "252d6c18ba1a195ff5b5b054cb40f620fac8eac9aed7f12a928fae924c8ddf88",
+          "bin/quality/process.py": "00039e1d3ff6dd2f6cd83bf8f8f3a4de4f0af086d9a6531eeba2f724dc157499",
+          "bin/quality_context.py": "d931b0c0a851fb1cdefd4a2055e30a8baed0ff547dacfce6e25619ca2ab78185",
+          "bin/quality_trust.py": "4c3ebc346b1428e1d226180ecbb05a249c90de48ae25cdc8438b89bb901f6c2e",
+          "compatibility.json": "c1858a0f6911c5320cc3aabf6aba99afd184ed879a5ff97ca59b712377c27244",
+          "skills/cmd-quality/SKILL.md": "de924c645e6febc8c2ecac0a10d4106469ab66c68088baf6113face1a81a2ff8",
+          "skills/cmd-quality/agents/openai.yaml": "bfedd61cd5a5715dbf4dded7919931a521ec2d0f2d330953351e4a0f302796ca",
+          "skills/quality/SKILL.md": "14ad5eff5adb32fc2410d85639054bc8044ed00c1cbf9246652a1f0f03486b90",
+          "workflow.md": "d537fff00696968316de6863e62429fb7bed799bc6550e460fc10d7fe50db059"
+        },
+        "source": "ac3e3e7e376c565d70cc53914fc458230d102465"
+      },
+      "manifest_sha256": "ed3944b34ce952a60c4c9ca8565042861d24800f883726f95530085957733637",
+      "members": 12,
+      "sha256": "8ea1d7cd07c9de0a6ebf552c297236fa0bed1ba919d454c64c211cd69598c026"
+    },
+    "software-quality-0.1.2-root-alias.pyz": {
+      "manifest": {
+        "files": {
+          "__main__.py": "f347375b6ea93ee9f27ff7e9efaf1371ce7e6311e4f110534f0957fe8195ae68",
+          "policy/LICENSE": "f8df3bd21cd3f3a8e6cf43b2c2e09978a61a97a9b59ab5810bcf71a6cd4addb1",
+          "policy/development-standard.md": "3f05315102082af52157444a83cc505dd0a4036f2e5a56d5f1a0f1997d7eff99",
+          "policy/toolkit-design.md": "7607934df242f675a77f5e35a968873e2cf51e399128493863f55ed72e2d18ac",
+          "quality/__init__.py": "252d6c18ba1a195ff5b5b054cb40f620fac8eac9aed7f12a928fae924c8ddf88",
+          "quality/cli.py": "54763e391e78d0273e0b393b0b3179b3412d30534986bb1f2f5919d137656165",
+          "quality/evidence.py": "fbc34c56bb181e5135bba7334ac5e433547fec395f49ddee666e19ba4a7a6db3",
+          "quality/external_cli.py": "6ac8c0b4ef7e00e8df6cad0a76b34ff8580d59c947eae539e655f1dad4c89a11",
+          "quality/external_clock.py": "81cff2ea30a8b561164804c9cd0d50fbff48db5473c464a26a9bd9f0c0df2be7",
+          "quality/external_model.py": "8ff52133fa0497c40e61e0be50761fc76a51d95476b4bb416ff08a3740f44af2",
+          "quality/external_store.py": "6b456c9035e92d4abbca276ddb9c5b3c555ee2730d0236004d88c833c0860f0c",
+          "quality/process.py": "00039e1d3ff6dd2f6cd83bf8f8f3a4de4f0af086d9a6531eeba2f724dc157499",
+          "quality/runner.py": "35587cbb1fe2331414acfefb7cf2c0d619a5c76f847d4c29a3a20f922d2feffa",
+          "quality/schema.py": "5b70aad2972d640c94569ce7914123dda670ad1351f650bce98bb28216118d93",
+          "quality/schemas/common.json": "a64d5405b9c63c2f373ab3465d916b47e8d0298ab3a5bfef6f78724650eeeeb9",
+          "quality/schemas/config.json": "c1bb861d7b3a66ef0a4bbd9b75522696962f3ed620d713a6c30f615c79bb8287",
+          "quality/schemas/external-common.json": "032a97bbb7ab82116ae1f9711301aba9dcff2d4d48acf3e4f997ff74b94b4f05",
+          "quality/schemas/external-config.json": "84f9ff5a1c2e8df62bb6cc9c708cf47917c59cf283256f2662d0b05e98ff573f",
+          "quality/schemas/external-envelope.json": "d834f5507fbd350edf416fa6332d0d4916619d4b6b401e2aa34aa4d07a5427aa",
+          "quality/schemas/external-observer.json": "2e54a1fd354893567bc7d9b6806fa24ca6ffb0ba72cdbb6ec3194058ae1af0fe",
+          "quality/schemas/external-record.json": "3df52fa60a1dee95b73b688cf8b6f2f4253e01d1cec1a800cb72ef24cc8d311a",
+          "quality/schemas/external-report.json": "449c4639544d1f6e7d46720f331bc9d2a77fec220de06d6e38c450b12ca1dae4",
+          "quality/schemas/external-state.json": "268c86d74ce32bf6db93f880406e9ab6c48d37d79d1589ee7c50f738114634b6",
+          "quality/schemas/lock.json": "57413624ead00440fccbd8b93c23d52c2de6395a8bb01389e4c567d1c5f6a6c4",
+          "quality/schemas/report.json": "0afc05bd89f5692dc0bc444a241180de9fd332e4df11586150d08a9ba01b9cb2",
+          "quality/schemas/review-record.json": "e239b03a86379f3abfde9a52a1f676d863caf4eaecceae8996447523ac50657a",
+          "quality/schemas/review.json": "464a7b791c6f8b4e03bfcf5d6e174809fe58c65597e304e0d90eb54f32c4ad78",
+          "quality_trust.py": "4c3ebc346b1428e1d226180ecbb05a249c90de48ae25cdc8438b89bb901f6c2e"
+        },
+        "policy_version": "0.1",
+        "publisher": "orlenko/software-quality",
+        "schema_version": 1,
+        "source": "db120201d3f38d1c6e444bc4d1ca9586c3d8eee0",
+        "version": "0.1.2"
+      },
+      "manifest_sha256": "dab2c14b4e734d5ec47747fa5f6c616aa03d9adc96070fa313d1d1082f00e890",
+      "members": 29,
+      "sha256": "7b87b9c23fbaf43941729f8bb2b0e1969fbf6872b02d8dbd23e074714bc526b0"
+    },
+    "software-quality-external-0.2.2-root-alias.pyz": {
+      "manifest": {
+        "files": {
+          "__main__.py": "4b2ccdc2d65cfa5bf9b07346876cd0bf72e059034a82a9277d83b8fd46783c63",
+          "policy/LICENSE": "f8df3bd21cd3f3a8e6cf43b2c2e09978a61a97a9b59ab5810bcf71a6cd4addb1",
+          "policy/development-standard.md": "3f05315102082af52157444a83cc505dd0a4036f2e5a56d5f1a0f1997d7eff99",
+          "policy/toolkit-design.md": "7607934df242f675a77f5e35a968873e2cf51e399128493863f55ed72e2d18ac",
+          "quality/__init__.py": "252d6c18ba1a195ff5b5b054cb40f620fac8eac9aed7f12a928fae924c8ddf88",
+          "quality/evidence.py": "fbc34c56bb181e5135bba7334ac5e433547fec395f49ddee666e19ba4a7a6db3",
+          "quality/external_cli.py": "6ac8c0b4ef7e00e8df6cad0a76b34ff8580d59c947eae539e655f1dad4c89a11",
+          "quality/external_clock.py": "81cff2ea30a8b561164804c9cd0d50fbff48db5473c464a26a9bd9f0c0df2be7",
+          "quality/external_model.py": "8ff52133fa0497c40e61e0be50761fc76a51d95476b4bb416ff08a3740f44af2",
+          "quality/external_store.py": "6b456c9035e92d4abbca276ddb9c5b3c555ee2730d0236004d88c833c0860f0c",
+          "quality/schema.py": "5b70aad2972d640c94569ce7914123dda670ad1351f650bce98bb28216118d93",
+          "quality/schemas/external-common.json": "032a97bbb7ab82116ae1f9711301aba9dcff2d4d48acf3e4f997ff74b94b4f05",
+          "quality/schemas/external-config.json": "84f9ff5a1c2e8df62bb6cc9c708cf47917c59cf283256f2662d0b05e98ff573f",
+          "quality/schemas/external-envelope.json": "d834f5507fbd350edf416fa6332d0d4916619d4b6b401e2aa34aa4d07a5427aa",
+          "quality/schemas/external-observer.json": "2e54a1fd354893567bc7d9b6806fa24ca6ffb0ba72cdbb6ec3194058ae1af0fe",
+          "quality/schemas/external-record.json": "3df52fa60a1dee95b73b688cf8b6f2f4253e01d1cec1a800cb72ef24cc8d311a",
+          "quality/schemas/external-report.json": "449c4639544d1f6e7d46720f331bc9d2a77fec220de06d6e38c450b12ca1dae4",
+          "quality/schemas/external-state.json": "268c86d74ce32bf6db93f880406e9ab6c48d37d79d1589ee7c50f738114634b6",
+          "quality_trust.py": "4c3ebc346b1428e1d226180ecbb05a249c90de48ae25cdc8438b89bb901f6c2e"
+        },
+        "policy_version": "0.1",
+        "publisher": "orlenko/software-quality",
+        "schema_version": 2,
+        "source": "db120201d3f38d1c6e444bc4d1ca9586c3d8eee0",
+        "version": "0.2.2"
+      },
+      "manifest_sha256": "dce7bb26e599fd1d40165953603264211aec94e8c58bc18903da88de6a24bcdf",
+      "members": 20,
+      "sha256": "0eec1d48dfa76fe898c4a00673367067da69849d366881cdad82778b5861308a"
+    }
+  },
+  "bootstrap_sha256": {
+    "adapters/quality.py": "4d597c4aad7d27986b999a9c02e59230b67287a820e3679bfdd0ddbceff6773a",
+    "adapters/quality_context.py": "d931b0c0a851fb1cdefd4a2055e30a8baed0ff547dacfce6e25619ca2ab78185",
+    "adapters/quality_external.py": "49dcd386bb8e7aafb94be337119c786d666d5a4b5e0af640b0a203bb9490f02f",
+    "quality_external_launch.py": "91e37bfb52b84a6752d6512b5ebbc6876771faf18c9556fdd7ac1efbe348d504",
+    "quality_launch.py": "14d77ae4dd7a9fa69197f970fc7c98a716b65c1e7486ceb668b7b8f7a621aaf6",
+    "quality_trust.py": "4c3ebc346b1428e1d226180ecbb05a249c90de48ae25cdc8438b89bb901f6c2e"
+  },
+  "limits": [
+    "Stable owner-controlled namespace only; no race-free filesystem or hostile-code containment claim.",
+    "Observed review behavior is read-only; reviewer permissions were not mechanically enforced.",
+    "No Linux, Python 3.11, live metadata/reviewer/provider, consumer or expired fixture rerun.",
+    "Initial loaded interpreter/entry/support remains an approved complete installation precondition.",
+    "Prior and interim candidate bytes remain unchanged and held; no passing result transfers to changed bytes."
+  ],
+  "observed_platform": "Darwin arm64; Python 3.14.7",
+  "qualification": {
+    "adapter_selection": {
+      "limits": "Actual bundle protocol 1 frontend/simple shim and actual core; protocol 2 shim remains separate source.",
+      "result": "passed",
+      "seconds": 27.713,
+      "tests": 32
+    },
+    "core_selection": {
+      "limits": "Mixed source helpers and selected actual archive routes; not package-only or full suite.",
+      "result": "passed",
+      "seconds": 57.816,
+      "tests": 103
+    },
+    "external_selection": {
+      "limits": "Ordinary CLI and instrumented defaults use actual archive; internal store/clock/fault helpers use source.",
+      "result": "passed",
+      "seconds": 85.916,
+      "tests": 54
+    },
+    "supplementary_sigint": {
+      "limits": "Actual external CLI; existing parent harness selects SIGINT instead of SIGTERM; no production override.",
+      "result": "passed",
+      "seconds": 1.967,
+      "tests": 1
+    }
+  },
+  "runtime_source": "db120201d3f38d1c6e444bc4d1ca9586c3d8eee0",
+  "runtime_tree": "4fb13d26626481d5411959c41f0b06a43ad978f5",
+  "status": "local pilot candidates; no release, source integration or consumer adoption"
+}

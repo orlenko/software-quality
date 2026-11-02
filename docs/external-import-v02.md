@@ -2,8 +2,8 @@
 
 Engine/package `0.2.2`, config/report schema `2`, launcher/adapter protocol `2`,
 policy `0.1` unchanged. This corrects the bounded slice in
-[decision 0004](decisions/0004-external-import-slice.md). Qualification of the new
-0.2.2 bytes is pending in the [path correction evidence](reviews/approved-path-fix-v01.md);
+[decision 0004](decisions/0004-external-import-slice.md). Qualification of the replacement
+0.2.2 bytes is recorded in the [path correction evidence](reviews/approved-path-fix-v01.md);
 historical invented-record evidence belongs to 0.2.0. The separate historical fixture record covers its frozen 0.2.0
 artifact; it does not qualify these new bytes. No consumer producer/controller, enforced environment, Linux run,
 consumer install/adoption, release or hosted artifact publication is established.

@@ -251,3 +251,82 @@ blobs match R2. Actual expanded-core import origins/evidence aliases and the ext
 whitelist were rechecked in isolated Python. Compatibility now records this observed
 R2 core source/digest; later A2 changes metadata/evidence only. A2 bundle qualification
 and final aggregate/publication gates are still pending at this checkpoint.
+
+## Replacement adapter A2 and reproducible evidence
+
+The independent metadata/evidence review cleared the two-file R2-to-A2 diff before
+commit. Adapter source A2 is `ac3e3e7e376c565d70cc53914fc458230d102465`, tree
+`2ce717bf5772069242d1002a1b9b87debf3a42d2`. Its only changes from R2 are compatibility
+metadata and this evidence record; runtime/bootstrap/support bytes are identical.
+The bundle `dist/quality-adapters-0.1.2-root-alias.zip` contains12 members and has
+SHA-256 `8ea1d7cd07c9de0a6ebf552c297236fa0bed1ba919d454c64c211cd69598c026`.
+Two builds were byte-identical. Every member/inventory digest and mapped committed
+source blob matched A2, including the exact R2 source/core digest in compatibility.
+
+The actual A2 bundle with actual R2 core passed32 selected tests in27.713s:
+20 context,5 simple-shim,6 tool/auth caller cases and1 platform-alias matrix.
+The matrix covers every shipped frontend/simple-shim selector with parent/no-parent
+paths and both outside destinations. Marker/auth negative checks and safe canonical
+controls ran against the extracted actual bundle; no live account or metadata
+provider ran. The protocol2 source shim is not a member of this protocol1 bundle.
+
+A supplementary existing actual-external-CLI interruption case passed in1.967s
+using SIGINT rather than its normal SIGTERM. Only the owned parent test harness's
+signal choice changed; package/source production bytes and fixtures were unchanged.
+It observes post-checkpoint interruption for both a positive receipt and natural7,
+returning incomplete2 and retained failure1 respectively. This is separate from
+internal fault injection and does not assert behavior under hard kill or output loss.
+
+The public [candidate inventory](../cases/approved-path-candidates-v01.json) records
+source/tree/archive, manifest/member and bootstrap SHA-256 identities. It contains
+newly authored public source names and digests, without raw local reports or paths.
+The following are the observed selections, not full-suite pass claims. Build runtime
+outputs from a clean R2 checkout and the adapter from a clean A2 checkout, using new
+output names if the named outputs already exist. A later documentation commit is
+not a replacement artifact source.
+
+```sh
+# R2: db120201d3f38d1c6e444bc4d1ca9586c3d8eee0
+python3 -I -S tools/build.py --output dist/software-quality-0.1.2-root-alias.pyz
+python3 -I -S tools/build_external.py --output dist/software-quality-external-0.2.2-root-alias.pyz
+python3 -I -S tools/test.py \
+  --artifact dist/software-quality-0.1.2-root-alias.pyz \
+  --match 'tests.test_alias_locks|tests.test_approved_paths|tests.test_path_callers|tests.test_context|tests.test_legacy_shim|tests.test_owned_process|tests.test_runner.RunnerTests.test_(complete_check|required_failure|changed_script|command_environment|timeout|definite_failure|missing_command|adapter_uses|interruption|initial_report|launcher_forwards|handled_cancellation)|tests.test_trust|tests.test_reviews.ReviewTests.test_(review_digest|later_review|invalid_other)'
+python3 -I -S tools/test_external.py \
+  --artifact dist/software-quality-external-0.2.2-root-alias.pyz
+
+# A2: ac3e3e7e376c565d70cc53914fc458230d102465; retain the exact R2 core above
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.2-root-alias.zip
+python3 -I -S tools/test.py \
+  --artifact dist/software-quality-0.1.2-root-alias.pyz \
+  --adapter-bundle dist/quality-adapters-0.1.2-root-alias.zip \
+  --match 'tests.test_context|tests.test_legacy_shim|tests.test_path_callers.PathCallerTests|tests.test_path_callers.PlatformAliasCallerTests'
+```
+
+These selections overlap and are not summed. They do not renew the old real fixture,
+establish a real external producer/controller, prove live reviewer accuracy, or
+qualify Linux/Python3.11. The observed Darwin alias cases ran without skips.
+Earlier archives, source/bootstrap objects and work refs remain frozen. Main stays
+at the original accepted source; this work prepares a new exact integration proposal
+only. Consumer pins, state, installs, registration and adoption are separate decisions.
+
+## Aggregate source review and preservation
+
+The independent aggregate adversarial review cleared exact accepted main
+`e543e1a9a27d44e3ec04e862dfb184858985e260` through A2, covering62 changed paths
+across24 commits. It inspected every advertised caller/default and reconciled prior
+milestones against the previously accepted rules. Reuse of earlier reviews was
+limited to unchanged affected bytes; the30 compatibility cases remain declarative
+design data and the old real fixture remains historical. Policy and handoff files
+have no aggregate changes. Every R2/A2 payload was compared directly to approved
+source; importer-only closure and prior archive preservation were rechecked.
+The reviewer executed no source/modules/tests/builds and made no writes. This
+source/candidate clearance does not authorize a main operation.
+
+The primary's manual publication check found73 valid local Markdown link targets
+and no local checkout/temp paths, collaboration identities or invites in the new
+public evidence. Thirteen named archive identities, six preserved local/remote refs,
+the original main tree, frozen external-bootstrap digests and historical source
+objects matched their recorded identities. New documentation does not alter runtime
+payloads or qualify additional platforms. Final evidence/publication review and
+exact committed-target binding are required before the scoped work-branch push.
