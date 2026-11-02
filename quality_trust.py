@@ -14,6 +14,7 @@ import zipfile
 from typing import Any
 
 VERSION = "0.1.0"
+EXTERNAL_VERSION = "0.2.0"
 POLICY = "0.1"
 PUBLISHER = "orlenko/software-quality"
 MAX_JSON = 2 * 1024 * 1024
@@ -58,10 +59,10 @@ def object_keys(value: Any, keys: set[str]) -> dict[str, Any]:
     return value
 
 
-def lock_value(data: bytes) -> dict[str, Any]:
+def lock_value(data: bytes, *, version: str = VERSION, schema_version: int = 1) -> dict[str, Any]:
     value = object_keys(parse_json(data), {"schema_version", "publisher", "source", "artifact_sha256", "version", "policy_version"})
-    if (type(value["schema_version"]) is not int or value["schema_version"] != 1
-            or value["publisher"] != PUBLISHER or value["version"] != VERSION
+    if (type(value["schema_version"]) is not int or value["schema_version"] != schema_version
+            or value["publisher"] != PUBLISHER or value["version"] != version
             or value["policy_version"] != POLICY
             or not isinstance(value["source"], str) or not OID.fullmatch(value["source"])
             or not isinstance(value["artifact_sha256"], str) or not DIGEST.fullmatch(value["artifact_sha256"])):
@@ -86,7 +87,19 @@ def within(path: Path, root: Path) -> bool:
     return path.resolve().is_relative_to(root.resolve())
 
 
-def artifact(data: bytes, digest: str, source: str) -> dict[str, Any]:
+def outside_path(path: Path, roots: list[Path]) -> Path:
+    """Reject paths traversing a protected ancestor, even if a later link exits it."""
+    if ".." in path.parts:
+        raise Invalid("parent-path-components-unsupported")
+    lexical = Path(os.path.abspath(path))
+    for candidate in (lexical, *lexical.parents):
+        if any(candidate.resolve().is_relative_to(root.resolve()) for root in roots):
+            raise Invalid("path-traverses-protected-root")
+    return path.resolve()
+
+
+def artifact(data: bytes, digest: str, source: str, *, version: str = VERSION,
+             schema_version: int = 1, entrypoint: str = "quality/cli.py") -> dict[str, Any]:
     if not DIGEST.fullmatch(digest) or not OID.fullmatch(source) or sha(data) != digest:
         raise Invalid("artifact-identity-mismatch")
     try:
@@ -106,14 +119,14 @@ def artifact(data: bytes, digest: str, source: str) -> dict[str, Any]:
                 raise Invalid("artifact-too-large")
             manifest = object_keys(parse_json(archive.read("manifest.json")),
                                    {"publisher", "version", "source", "policy_version", "schema_version", "files"})
-            expected = {"publisher": PUBLISHER, "version": VERSION, "source": source,
-                        "policy_version": POLICY, "schema_version": 1}
-            if any(manifest[key] != value for key, value in expected.items()):
+            expected = {"publisher": PUBLISHER, "version": version, "source": source,
+                        "policy_version": POLICY, "schema_version": schema_version}
+            if any(type(manifest[key]) is not type(value) or manifest[key] != value for key, value in expected.items()):
                 raise Invalid("artifact-manifest-mismatch")
             files = manifest["files"]
             if type(files) is not dict or set(names) != set(files) | {"manifest.json"}:
                 raise Invalid("artifact-inventory-mismatch")
-            if not {"__main__.py", "quality_trust.py", "quality/__init__.py", "quality/cli.py"} <= set(files):
+            if not {"__main__.py", "quality_trust.py", "quality/__init__.py", entrypoint} <= set(files):
                 raise Invalid("artifact-entrypoint-missing")
             for name, expected_sha in files.items():
                 if not isinstance(expected_sha, str) or sha(archive.read(name)) != expected_sha:

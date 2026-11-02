@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "external-record schema2",
+  "type": "object",
+  "properties": {
+    "gate_id": {
+      "type": "string",
+      "pattern": "[a-z][a-z0-9-]{0,39}"
+    },
+    "producer_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "invocation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "canonical_sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "phase": {
+      "enum": [
+        "known-commit",
+        "precommit"
+      ]
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "cache",
+          "conditional",
+          "cross-phase",
+          "git-aware-execution"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 4
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "whole",
+            "partial",
+            "unknown"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "kind",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "consumed": {
+      "type": "object",
+      "properties": {
+        "mechanism_id": {
+          "enum": [
+            "immutable-tree",
+            "serialized-inputs",
+            "instrumented-inputs"
+          ]
+        },
+        "mechanism_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "established": {
+          "type": "boolean"
+        },
+        "before_context_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "after_context_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "origin_tree": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "environment_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "provenance": {
+          "enum": [
+            "trusted-local",
+            "untrusted",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "mechanism_id",
+        "mechanism_sha256",
+        "established",
+        "before_context_sha256",
+        "after_context_sha256",
+        "origin_tree",
+        "environment_sha256",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "completed",
+            "terminated",
+            "wrapper-error",
+            "unknown"
+          ]
+        },
+        "exit_code": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        }
+      },
+      "required": [
+        "kind",
+        "exit_code"
+      ],
+      "additionalProperties": false
+    },
+    "timing": {
+      "type": "object",
+      "properties": {
+        "clock": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "const": "same-host-boot-ms-v1"
+            },
+            "boot_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "model",
+            "boot_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "started_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "finished_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "started_mono_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "finished_mono_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "clock",
+        "started_ms",
+        "finished_ms",
+        "elapsed_ms",
+        "started_mono_ms",
+        "finished_mono_ms"
+      ],
+      "additionalProperties": false
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "read-source",
+          "read-git-metadata",
+          "disposable-files",
+          "preprovisioned-environment"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 4
+    },
+    "output_complete": {
+      "type": "boolean"
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "gate_id",
+    "producer_id",
+    "invocation_id",
+    "canonical_sha256",
+    "phase",
+    "features",
+    "coverage",
+    "consumed",
+    "outcome",
+    "timing",
+    "effects",
+    "output_complete",
+    "note"
+  ],
+  "additionalProperties": false
+}

@@ -19,7 +19,8 @@ def validate(value: Any, rule: dict[str, Any]) -> None:
         raise Invalid("unsupported-schema-keyword")
     if "$ref" in rule:
         name, _, fragment = rule["$ref"].partition("#")
-        if name not in {"common.json", "config.json", "review-record.json"}:
+        if name not in {"common.json", "config.json", "review-record.json", "external-common.json",
+                        "external-config.json", "external-record.json", "external-observer.json", "external-report.json"}:
             raise Invalid("unsupported-schema-reference")
         target = parse_json(files("quality").joinpath("schemas", name).read_bytes())
         for part in fragment.split("/")[1:]:

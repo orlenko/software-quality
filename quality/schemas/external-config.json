@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "external-config schema2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "gate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "[a-z][a-z0-9-]{0,39}"
+        },
+        "producer_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "observer_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "canonical_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "coverage_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "environment_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "mechanism": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "enum": [
+                "immutable-tree",
+                "serialized-inputs",
+                "instrumented-inputs"
+              ]
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "id",
+            "sha256"
+          ],
+          "additionalProperties": false
+        },
+        "observer": {
+          "type": "object",
+          "properties": {
+            "profile_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "mechanism_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "profile_sha256",
+            "mechanism_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "trust_rule": {
+          "enum": [
+            "owner-designation-permitted",
+            "always-contained"
+          ]
+        },
+        "required_controls": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "deadline",
+              "cleanup",
+              "containment",
+              "read-only",
+              "paths",
+              "tools",
+              "network",
+              "disclosure",
+              "independence",
+              "privacy"
+            ]
+          },
+          "minItems": 2,
+          "maxItems": 10
+        },
+        "allowed_effects": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "read-source",
+              "read-git-metadata",
+              "disposable-files",
+              "preprovisioned-environment"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "refs/(?:heads|remotes|tags)/[A-Za-z0-9_/.-]+"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "budget_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "import_window_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 900
+        }
+      },
+      "required": [
+        "id",
+        "producer_id",
+        "observer_id",
+        "canonical_sha256",
+        "coverage_sha256",
+        "environment_sha256",
+        "mechanism",
+        "observer",
+        "trust_rule",
+        "required_controls",
+        "allowed_effects",
+        "refs",
+        "budget_seconds",
+        "import_window_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "unsupported_obligations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "[a-z][a-z0-9-]{0,39}"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 16
+    }
+  },
+  "required": [
+    "schema_version",
+    "repository",
+    "gate",
+    "unsupported_obligations"
+  ],
+  "additionalProperties": false
+}

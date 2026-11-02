@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "external-observer schema2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "protocol": {
+      "const": "external-controls-v1"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "[0-9a-f]{32}"
+    },
+    "challenge": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "gate_id": {
+      "type": "string",
+      "pattern": "[a-z][a-z0-9-]{0,39}"
+    },
+    "invocation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "observer_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "profile_sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "mechanism_sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "source_route": {
+      "enum": [
+        "independent-controller",
+        "producer",
+        "manual"
+      ]
+    },
+    "basis": {
+      "enum": [
+        "controller-observation",
+        "producer-statement",
+        "manual-fact"
+      ]
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "const": "same-host-boot-ms-v1"
+        },
+        "boot_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "model",
+        "boot_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "observed_from_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "observed_through_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "cleanup_at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "deadline",
+              "cleanup",
+              "containment",
+              "read-only",
+              "paths",
+              "tools",
+              "network",
+              "disclosure",
+              "independence",
+              "privacy"
+            ]
+          },
+          "state": {
+            "enum": [
+              "enforced",
+              "unavailable",
+              "unknown"
+            ]
+          },
+          "measurement_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "kind",
+          "state",
+          "measurement_ref"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10
+    },
+    "deadline_at_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "cleanup_state": {
+      "enum": [
+        "complete",
+        "unknown",
+        "unavailable"
+      ]
+    },
+    "observed_from_mono_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "observed_through_mono_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "cleanup_at_mono_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "deadline_at_mono_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "schema_version",
+    "protocol",
+    "plan_id",
+    "challenge",
+    "context_sha256",
+    "gate_id",
+    "invocation_id",
+    "observer_id",
+    "profile_sha256",
+    "mechanism_sha256",
+    "source_route",
+    "basis",
+    "clock",
+    "observed_from_ms",
+    "observed_through_ms",
+    "cleanup_at_ms",
+    "observations",
+    "deadline_at_ms",
+    "cleanup_state",
+    "observed_from_mono_ms",
+    "observed_through_mono_ms",
+    "cleanup_at_mono_ms",
+    "deadline_at_mono_ms"
+  ],
+  "additionalProperties": false
+}

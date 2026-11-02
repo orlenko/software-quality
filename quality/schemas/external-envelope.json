@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "external-envelope schema2",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "protocol": {
+      "const": "external-checks-v1"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "[0-9a-f]{32}"
+    },
+    "challenge": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "context_sha256": {
+      "type": "string",
+      "pattern": "[0-9a-f]{64}"
+    },
+    "records": {
+      "type": "array",
+      "items": {},
+      "minItems": 0,
+      "maxItems": 8
+    }
+  },
+  "required": [
+    "schema_version",
+    "protocol",
+    "plan_id",
+    "challenge",
+    "context_sha256",
+    "records"
+  ],
+  "additionalProperties": false
+}

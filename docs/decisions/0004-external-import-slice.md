@@ -1,9 +1,9 @@
 # Known-target external gate import slice
 
-Status: proposed implementation reconciliation, 2026-11-02. Authority is the
+Status: implementation reconciliation, 2026-11-02. Authority is the
 bounded import-only assignment; accepted repository/policy rules are those at
 `c6b311f`. This narrows [decision 0003](0003-pilot-compatibility.md), rather than
-implementing its whole proposed platform. Independent critique is pending below.
+implementing its whole proposed platform. Independent critique and disposition are recorded below.
 
 The user needs truthful evidence from existing canonical gates that a Git-free
 snapshot runner cannot represent. The smallest alternative remains the current

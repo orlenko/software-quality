@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "external-common schema2",
+  "$defs": {
+    "control": {
+      "enum": [
+        "deadline",
+        "cleanup",
+        "containment",
+        "read-only",
+        "paths",
+        "tools",
+        "network",
+        "disclosure",
+        "independence",
+        "privacy"
+      ]
+    },
+    "effect": {
+      "enum": [
+        "read-source",
+        "read-git-metadata",
+        "disposable-files",
+        "preprovisioned-environment"
+      ]
+    },
+    "mechanism": {
+      "enum": [
+        "immutable-tree",
+        "serialized-inputs",
+        "instrumented-inputs"
+      ]
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "const": "same-host-boot-ms-v1"
+        },
+        "boot_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "model",
+        "boot_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "status_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "index_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "commit": {
+                "type": "string",
+                "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+              }
+            },
+            "required": [
+              "name",
+              "commit"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "head",
+        "status_sha256",
+        "index_sha256",
+        "refs"
+      ],
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "base": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "head": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "base_tree": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "head_tree": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "config_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "lock_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "toolkit_source": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "policy_version": {
+          "const": "0.1"
+        },
+        "schema_version": {
+          "const": 2
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "head": {
+              "type": "string",
+              "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+            },
+            "status_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "index_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            },
+            "refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "commit": {
+                    "type": "string",
+                    "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+                  }
+                },
+                "required": [
+                  "name",
+                  "commit"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "head",
+            "status_sha256",
+            "index_sha256",
+            "refs"
+          ],
+          "additionalProperties": false
+        },
+        "clock": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "const": "same-host-boot-ms-v1"
+            },
+            "boot_sha256": {
+              "type": "string",
+              "pattern": "[0-9a-f]{64}"
+            }
+          },
+          "required": [
+            "model",
+            "boot_sha256"
+          ],
+          "additionalProperties": false
+        },
+        "owner_trusted_head": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "repository",
+        "base",
+        "head",
+        "base_tree",
+        "head_tree",
+        "config_sha256",
+        "lock_sha256",
+        "artifact_sha256",
+        "toolkit_source",
+        "policy_version",
+        "schema_version",
+        "metadata",
+        "clock",
+        "owner_trusted_head"
+      ],
+      "additionalProperties": false
+    },
+    "entry": {
+      "type": "object",
+      "properties": {
+        "receipt_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "record_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "record": {
+          "$ref": "external-record.json"
+        },
+        "accepted_at_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "accepted_at_mono_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "receipt_sha256",
+        "record_sha256",
+        "record",
+        "accepted_at_ms",
+        "accepted_at_mono_ms"
+      ],
+      "additionalProperties": false
+    },
+    "stage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "fail",
+            "incomplete"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "exit_code": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 255
+        },
+        "log": {
+          "const": ""
+        },
+        "evidence_basis": {
+          "enum": [
+            "importer-observation",
+            "operator-approval",
+            "external-attestation",
+            "external-controller-observation",
+            "unsupported"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "status",
+        "reason",
+        "exit_code",
+        "log",
+        "evidence_basis"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

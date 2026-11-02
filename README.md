@@ -178,3 +178,19 @@ attestation cannot replace multiple required reviews. See the
 [implementation decision](docs/decisions/0001-minimal-runner.md).
 
 Newly authored material is available under the [MIT license](LICENSE).
+
+## Import-only candidate 0.2
+
+The separate [external gate candidate](docs/external-import-v02.md) implements
+schema2 validation of one already-known committed target and externally supplied
+canonical-gate/controller evidence. It never runs that gate. Engine `0.2.0`,
+policy `0.1` and protocol2 require their own accepted pins; v1 inputs are rejected.
+This work-branch candidate is not merged, released or installed in any consumer.
+Synthetic qualification does not establish a real producer, controller or adoption.
+
+```sh
+python3 -I -S tools/test_external.py
+# Requires a clean reviewed source commit; output must not already exist.
+python3 -I -S tools/build_external.py --output dist/software-quality-external.pyz
+python3 -I -S tools/test_external.py --artifact dist/software-quality-external.pyz
+```

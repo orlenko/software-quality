@@ -1,58 +1,18 @@
 """Plan, execute authorized stages and atomically persist local evidence."""
 from __future__ import annotations
 
-from contextlib import contextmanager
-from datetime import datetime, timezone
-import fcntl
-import os
 from pathlib import Path, PurePosixPath
 import sys
-from typing import Any, Iterator
+from typing import Any
 import uuid
 
 from quality_trust import (MAX_JSON, Git, Invalid, POLICY, canonical, lock_value,
                            parse_json, regular_bytes, sha, snapshot_stable, within)
 from quality.process import CommandInterrupted, execute
 from quality.schema import checked
+from quality.evidence import now, stage, verdict, save, target_lock
 
 EMPTY_STATUS = sha(b"")
-
-
-def now() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def stage(name: str, status: str = "incomplete", reason: str = "not-run",
-          code: int = -1, log: str = "") -> dict[str, Any]:
-    return {"id": name, "status": status, "reason": reason, "exit_code": code, "log": log}
-
-
-def verdict(stages: list[dict[str, Any]]) -> str:
-    values = {item["status"] for item in stages}
-    return "fail" if "fail" in values else "incomplete" if "incomplete" in values else "pass"
-
-
-def save(path: Path, report: dict[str, Any]) -> None:
-    checked("report", report)
-    temporary = path.with_name(".report-" + uuid.uuid4().hex)
-    fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    with os.fdopen(fd, "wb") as stream:
-        stream.write(canonical(report))
-        stream.flush()
-        os.fsync(stream.fileno())
-    os.replace(temporary, path)
-
-
-@contextmanager
-def target_lock(state: Path, repo: Path) -> Iterator[None]:
-    lock = state / ("target-" + sha(os.fsencode(repo)) + ".lock")
-    fd = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
-    with os.fdopen(fd, "r+b") as stream:
-        try:
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as exc:
-            raise Invalid("target-run-already-active") from exc
-        yield
 
 
 def review_stages(args: Any, config: dict[str, Any], context: dict[str, Any],
