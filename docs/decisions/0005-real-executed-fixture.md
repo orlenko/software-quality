@@ -49,17 +49,17 @@ These are reviewed procedural properties, not OS path/network/read-only isolatio
 The fixture owner creates a new private disposable root outside the toolkit and
 all existing targets. Its peer directories contain approved frozen bytes, copied
 approved harness/profile/gate, and each case's subject, cache, state, handoff,
-producer snapshot/output and controller observations. Raw evidence stays there,
+producer captured frames/output and controller observations. Raw evidence stays there,
 ignored/outside Git. Never write to a consumer, user configuration, private source,
 credentials or unrelated process. No global install or application operation.
 Normal scoped commits/pushes contain only deliberately authored public code and
 sanitized generic results; no raw local paths/transcripts/logs enter the repository.
 
-The setup role creates each plain invented Git subject with exactly the reviewed
+The setup role creates one plain invented Git subject with four case commits of the reviewed
 gate, case input, schema 2 registry and frozen lock; uses invented Git identity and
 neutralized environment/hooks/configuration; installs the approved ZIP into that
-case's disposable cache and runs the frozen outside-target doctor. It saves the
-actual issued handoff unchanged. The owner then inspects the resulting source,
+case's disposable cache and runs the frozen outside-target doctor. For each case it selects only that owner-approved commit in this disposable
+subject before doctor, then saves the actual issued handoff unchanged. The owner then inspects the resulting source,
 head/profile/command identities and records exact-head trust approval before any
 gate execution. Doctor/import never dispatch the gate.
 
@@ -95,7 +95,7 @@ logical compiled origin and exact runtime/environment observation. Endpoint stab
 is supporting evidence only; consumed data and origin need actual gate observations.
 Runtime facts include the approved existing interpreter identity, isolated/no-site
 flags, version and explicit child environment; no editable imports/dependencies.
-The approved registry environment digest is independently established at setup and
+The approved registry environment digest is independently established as an expected runtime/environment specification at setup and
 must match actually observed gate facts. A missing intake cannot be reconstructed
 from expected values after timeout/interruption.
 
