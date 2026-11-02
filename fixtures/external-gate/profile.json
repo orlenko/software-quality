@@ -1,26 +1,27 @@
 {
   "schema_version": 1,
   "purpose": "one owned real-executed sum fixture; no consumer qualification",
-  "harness_sha256": "382df952786d195a567ffe08c0e3fe235aee8cbfef410e73c541572e4f7f9a72",
+  "harness_sha256": "b86f0d91dd946c22d201c082a2adc7183c932bc0f7baea5bc10aeeb723269e1b",
   "gate_sha256": "c00524e97c23df35156ff9acc0abad0ac5bf82cc648f9316b31bed6a09f83ca9",
   "consumption": {
     "id": "serialized-git-blobs-v1",
-    "harness_sha256": "382df952786d195a567ffe08c0e3fe235aee8cbfef410e73c541572e4f7f9a72",
+    "harness_sha256": "b86f0d91dd946c22d201c082a2adc7183c932bc0f7baea5bc10aeeb723269e1b",
     "gate_sha256": "c00524e97c23df35156ff9acc0abad0ac5bf82cc648f9316b31bed6a09f83ca9",
     "inputs": [
       "gate.py",
       "input.json"
     ],
     "origin": "captured-source compiled as git:<observed-H>:gate.py; no installed-module provenance",
-    "facts": "child hashes captured code/input, gate parses before progress; actual completed stages only on return"
+    "facts": "child hashes captured code/input, gate parses before progress; actual completed stages only on return",
+    "environment": "explicit isolated environment; fixed synthetic CF encoding/country plus current ownership UID; actual full environment measured without dropping fields"
   },
   "supervision": {
     "id": "owned-group-deadline-cleanup-v1",
-    "harness_sha256": "382df952786d195a567ffe08c0e3fe235aee8cbfef410e73c541572e4f7f9a72",
+    "harness_sha256": "b86f0d91dd946c22d201c082a2adc7183c932bc0f7baea5bc10aeeb723269e1b",
     "budget_seconds": 3,
     "cleanup_grace_seconds": 1,
     "clock": "same-host-boot-ms-v1; kernel boot read once per live process; fresh wall/monotonic timestamps",
-    "ownership": "WNOWAIT retains child leader through final signals; no signaling after reap",
+    "ownership": "WNOWAIT retains child leader; signal only while leader observed live; unknown post-reap groups block, never signal after reap",
     "cleanup": "actual gate wait plus controller wait and kernel observation of empty owned group",
     "unavailable": [
       "OS containment",

@@ -1,7 +1,7 @@
 # Real-executed fixture qualification
 
-Status: static review complete; no new harness, gate, loader or setup code has run.
-Only source/AST/JSON/hash inspection has occurred. This record will distinguish
+Status: one approved real attempt exposed two fixture issues; corrected source
+has passed independent static fix review and awaits fresh execution. This record will distinguish
 actual measurements from expected reference identities and procedural restrictions.
 The [design](../decisions/0005-real-executed-fixture.md) records scope, smaller
 alternative, responsibilities, writes, mechanisms, clocks and failure behavior.
@@ -61,6 +61,40 @@ receipt approval follows actual measurement inspection and precedes import. Thos
 later approvals cannot be presumed from this source approval. Existing user scope
 permits these effects without another confirmation. Approval cannot substitute for
 an unmeasured mechanical control. Runtime results remain pending.
+
+## First actual attempt and superseding approval
+
+Source `89c3c99279edfe309ec22ab804454d254eaaad3c` was approved and invoked only
+after review. Setup created one owned subject/four commits. The first pass input
+actually completed all parse/sum/compare stages and naturally exited0. Qualification
+stopped: Darwin returned EPERM for an unnecessary signal to the already-exited
+producer group, so no controller receipt was produced. The actual full environment
+also contained an OS-added CF encoding variable; its unexpected fingerprint correctly
+left consumed establishment false. This was not a passing qualification/import.
+Raw first-attempt evidence is retained ignored. Read-only post-failure probes found
+the recorded controller, producer, gate and group absent; actual gate and controller
+waits were recorded. No unknown process was signaled in cleanup.
+
+Independent static fix review accepted two fixture-only corrections: signal only
+while WNOWAIT reports the owned leader live, retaining unknown on permission/group
+uncertainty; explicitly supply a synthetic CF encoding/country in the predeclared
+environment and still compare the entire actual environment. No observed field is
+dropped, no receipt is restamped, and no frozen tool is patched. The gate is unchanged.
+The reviewer executed neither fix nor cleanup probes and made no writes.
+
+Superseding exact-source owner approval, recorded before fresh execution:
+
+| Input | SHA256 |
+| --- | --- |
+| Harness | `b86f0d91dd946c22d201c082a2adc7183c932bc0f7baea5bc10aeeb723269e1b` |
+| Profile | `6b4f60af50716ca5e85d2ded3d1fc912aa5cc154dfef9e28c9e86c2c62a27370` |
+| Gate | unchanged `c00524e97c23df35156ff9acc0abad0ac5bf82cc648f9316b31bed6a09f83ca9` |
+
+As fixture owner I approve only these reviewed bytes with the same bounded commands,
+fresh disposable subject/root, new exact-head approvals/challenges and independently
+inspected producer/controller receipts. Initial failed evidence remains immutable.
+This does not approve any core/schema/policy/adapter/version/pin change or additional
+consumer/workload. New runtime results remain pending.
 
 ## Limits
 

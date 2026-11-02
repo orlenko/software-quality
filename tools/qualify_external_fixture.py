@@ -60,7 +60,8 @@ def write(path: Path, value: Any) -> None:
 
 def environment(case: Path) -> dict[str, str]:
     return {"PATH": os.defpath, "HOME": str(case / "temp"), "TMPDIR": str(case / "temp"), "LC_ALL": "C",
-            "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_TERMINAL_PROMPT": "0"}
+            "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_TERMINAL_PROMPT": "0",
+            "__CF_USER_TEXT_ENCODING": "0x" + format(os.getuid(), "X") + ":0x0:0x0"}
 
 
 def runtime(case: Path, *, observed: bool = False) -> dict[str, Any]:
@@ -281,12 +282,12 @@ def settle(child: subprocess.Popen[Any], events: list[dict[str, Any]], *, group:
     # waitid(WNOWAIT) confirms ownership without Popen's implicit reaping.
     try:
         exited = exited_unreaped(child)
-        if group or not exited:
+        if not exited:
             send(signal.SIGTERM)
             until = time.monotonic() + grace
             while not exited_unreaped(child) and time.monotonic() < until:
                 time.sleep(0.005)
-        if group or not exited_unreaped(child):
+        if not exited_unreaped(child):
             send(signal.SIGKILL)
     finally:
         # Even a signaling/observation exception must attempt the owned child's wait.
