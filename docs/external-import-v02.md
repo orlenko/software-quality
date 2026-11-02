@@ -60,7 +60,7 @@ supply trust.
 
 ```sh
 python3 -I -S /approved/toolkit/quality_external_launch.py --adapter-protocol 2 install \
-  --artifact /approved/artifacts/software-quality-external-0.2.2.pyz \
+  --artifact /approved/artifacts/software-quality-external-0.2.2-root-alias.pyz \
   --source FULL_TOOLKIT_COMMIT --sha256 APPROVED_ARTIFACT_SHA256 \
   --cache /owner/quality-cache
 

@@ -136,3 +136,42 @@ class SelectorContextTests(unittest.TestCase):
             with self.assertRaises(Invalid):selector_context(arguments)
         for arguments in (["doctor"],["--adapter","2","install"],["--adapter-protocol","--repo","install"]):
             with self.assertRaises(Invalid):selector_context(arguments,subjectless_install=True)
+
+
+class RootIdentityTests(unittest.TestCase):
+    def test_equivalent_existing_root_identity_is_protected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve();subject=root/"subject";subject.mkdir();alias=root/"equivalent-root";alias.mkdir()
+            outside=root/"outside";outside.mkdir();(outside/"item").write_text("inert")
+            (alias/"traversal").symlink_to(outside,target_is_directory=True)
+            actual=Path.lstat;identity=subject.lstat()
+            def equivalent(path):
+                return identity if path==alias else actual(path)
+            with patch.object(Path,"lstat",equivalent):
+                with self.assertRaises(Invalid):outside_path(alias/"traversal/item",[subject],strict=True)
+            # Distinct owned outside roots remain supported without an identity alias.
+            self.assertEqual(outside_path(alias/"traversal/item",[subject],strict=True),outside/"item")
+
+    def test_real_platform_root_alias_cannot_hide_subject_hop(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve();subject=root/"subject";subject.mkdir()
+            alternate=Path('/System/Volumes/Data')/subject.relative_to('/')
+            if not alternate.exists() or not os.path.samefile(subject,alternate):
+                self.skipTest('no stable alternate root namespace available on this platform')
+            outside=root/"outside";(outside/"subdir").mkdir(parents=True)
+            (outside/"item").write_text("inert");(outside/"subdir/item").write_text("inert")
+            (subject/"traversal").symlink_to(outside/"subdir",target_is_directory=True)
+            alias=root/"outside-alias";alias.symlink_to(alternate/"traversal",target_is_directory=True)
+            for value in (alias/"item",alias/".."/"item"):
+                with self.assertRaises(Invalid):outside_path(value,[subject],strict=True)
+
+    def test_filesystem_root_identity_is_checked_before_named_components(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve();subject=root/"root-alias";subject.mkdir()
+            item=root/"item";item.write_text("inert")
+            actual=Path.lstat;filesystem_root=Path('/').lstat()
+            def equivalent(path):
+                return filesystem_root if path==subject else actual(path)
+            with patch.object(Path,"lstat",equivalent):
+                with self.assertRaises(Invalid):outside_path(item,[subject],strict=True)
+            self.assertEqual(outside_path(item,[subject],strict=True),item)

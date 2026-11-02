@@ -4,11 +4,11 @@
   "runner_engine": "0.1.2",
   "runner_policy": "0.1",
   "runner_schema": 1,
-  "tested_runner_source": "6ab57e0d0f6dbc786d081ec85d34bdc7230b3503",
-  "tested_runner_sha256": "baefa1331deae8cefcd4eb030887cf8a7a9425d2bac3eb37eb5823e3d3a0d33d",
+  "tested_runner_source": null,
+  "tested_runner_sha256": null,
   "pin_selection": "accepted-base-lock-through-approved-launcher",
   "review_interface": "recorded-v1-external-attestation",
   "installed_or_registered": false,
   "live_metadata_or_harness_tested": false,
-  "qualification": "owned-affected-runtime-checks-passed; adapter-evidence-separate"
+  "qualification": "pending-protected-root-alias-candidate; prior-runtime-held"
 }

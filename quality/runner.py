@@ -78,8 +78,9 @@ def run(args: Any, artifact_sha: str, source: str, experimental: bool) -> tuple[
     tool_root = Path(__file__).resolve().parents[1] if experimental else tool.parent
     state = outside_path(args.state, [repo, tool_root])
     runtime_python([repo])
-    if (within(state, repo) or within(state, tool_root) or within(repo, state)
-            or within(repo, tool_root)):
+    if (within(state, repo) or within(repo, state)
+            or within(state, tool_root) or within(tool_root, state)
+            or within(repo, tool_root) or within(tool_root, repo)):
         raise Invalid("target-tool-state-paths-must-be-separate")
     git = Git(repo)
     base, head = git.commit(args.base), git.commit(args.head)

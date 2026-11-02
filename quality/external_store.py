@@ -4,11 +4,12 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 import secrets
+import stat
 import subprocess
 from typing import Any, Callable
 import uuid
 
-from quality_trust import Cancellation, DIGEST, EXTERNAL_VERSION, MAX_JSON, Git, Invalid, canonical, parse_json, regular_bytes, sha, outside_path
+from quality_trust import Cancellation, DIGEST, EXTERNAL_VERSION, MAX_JSON, Git, Invalid, canonical, parse_json, regular_bytes, sha, outside_path, within
 from quality.evidence import SaveFailure, save, sync_directory, target_lock
 from quality.external_clock import Reading, read as read_clock
 from quality.external_model import bound, continuity, metadata, natural_failure, observer_bound, registry, report
@@ -125,7 +126,7 @@ class ImportOutcome:
 
 
 def overlaps(a: Path, b: Path) -> bool:
-    return a == b or a.is_relative_to(b) or b.is_relative_to(a)
+    return within(a, b) or within(b, a)
 
 
 def outside(path: Path, roots: list[Path]) -> Path:
@@ -134,7 +135,7 @@ def outside(path: Path, roots: list[Path]) -> Path:
 
 def state_root(path: Path, roots: list[Path]) -> Path:
     root = outside(path, roots)
-    if any(overlaps(root, item.resolve()) for item in roots):
+    if any(overlaps(root, item) for item in roots):
         raise Invalid("state-roots-must-be-separate")
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not root.is_dir() or root.stat().st_mode & 0o077:
@@ -184,12 +185,18 @@ def create(root: Path, context: dict[str, Any], config: dict[str, Any], clock: R
     return state
 
 
-def load(root: Path, identifier: str) -> tuple[Path, dict[str, Any]]:
-    if len(identifier) != 32 or any(char not in "0123456789abcdef" for char in identifier):
+def plan_directory(root: Path, identifier: str) -> Path:
+    if type(identifier) is not str or len(identifier) != 32 or any(char not in "0123456789abcdef" for char in identifier):
         raise Invalid("invalid-plan-id")
     directory = root / identifier
-    if directory.is_symlink() or not directory.is_dir() or directory.stat().st_mode & 0o077:
+    info = directory.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_mode & 0o077:
         raise Invalid("private-plan-directory-required")
+    return directory
+
+
+def load(root: Path, identifier: str) -> tuple[Path, dict[str, Any]]:
+    directory = plan_directory(root, identifier)
     path = directory / "record.json"
     value = checked("external-state", parse_json(regular_bytes(path, MAX_JSON)))
     expected = sha(canonical({key: item for key, item in value.items() if key != "state_sha256"}))
@@ -281,7 +288,8 @@ def receive(root: Path, identifier: str, git: Git, context: dict[str, Any] | Non
             context_error: str | None = None, outcome: ImportOutcome | None = None,
             request: dict[str, Any] | None = None, cancellation: Cancellation | None = None, final_clock: Callable[[], Reading] | None = None) -> dict[str, Any]:
     # Plan lock also serializes the same route used from two physical clones.
-    with target_lock(root, root / identifier):
+    directory = plan_directory(root, identifier)
+    with target_lock(root, directory):
         path, state = load(root, identifier)
         outcome = outcome or ImportOutcome()
         if request is None and context is not None:

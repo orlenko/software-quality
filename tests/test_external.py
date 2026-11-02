@@ -961,3 +961,75 @@ with patch.object(clock.sys,'platform','darwin'),patch.object(clock,'Path',side_
                     output=parse_json(result.stdout.encode())
                     self.assertEqual(output["report"]["overall"],"fail")
                     self.assertTrue(any("final-clock-unavailable" in row["reason"] for row in output["report"]["stages"]))
+
+    def test_stable_platform_root_alias_receipts_are_not_attributed(self):
+        alternate=Path('/System/Volumes/Data')/self.fx.repo.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.fx.repo,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        a,b=self.fx.root/"outside-a",self.fx.root/"outside-b"
+        for directory in (a,b):(directory/"subdir").mkdir(parents=True)
+        hop=self.fx.repo/"traversal";hop.symlink_to(a/"subdir",target_is_directory=True)
+        alias=self.fx.root/"outside-alias";alias.symlink_to(alternate/"traversal",target_is_directory=True)
+        for parent in (False,True):
+            literal=alias/".."/"receipt.json" if parent else alias/"receipt.json"
+            for directory in (a,b):
+                hop.unlink();hop.symlink_to(directory/"subdir",target_is_directory=True)
+                self.fx.head=self.fx.commit()
+                plan=self.fx.plan();envelope,_=self.fx.facts(plan,7)
+                arguments=self.fx.inputs(envelope,None)
+                selected=directory/"receipt.json" if parent else directory/"subdir/receipt.json"
+                selected.write_bytes(Path(arguments[1]).read_bytes());arguments[1]=str(literal)
+                result,output=self.fx.run("import","--plan",plan["plan_id"],*arguments)
+                report=self.assert_result(result,output,"incomplete")
+                self.assertTrue(any("producer-input-unavailable-or-invalid" in row["reason"] for row in report["stages"]))
+                _,stored=load(self.fx.state,plan["plan_id"])
+                self.assertFalse(stored["original"])
+                self.assertFalse(stored["failure"])
+
+    def test_reverse_state_cache_alias_ancestor_refuses(self):
+        common=self.fx.root/"private-common";common.mkdir(mode=0o700)
+        cache=common/"cache";cache.mkdir(mode=0o700)
+        (cache/(self.digest+".pyz")).write_bytes(self.package.read_bytes())
+        alternate=Path('/System/Volumes/Data')/common.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(common,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        result,output=self.fx.run("doctor","--cache",str(cache),"--state",str(alternate))
+        self.assertEqual(result.returncode,2,result.stderr)
+        self.assertIsNone(output)
+        self.assertEqual(set(common.iterdir()),{cache})
+
+    def test_shared_plan_alias_lock_between_clones_retains_failure(self):
+        from quality.evidence import target_lock
+        plan=self.fx.plan();failure,_=self.fx.facts(plan,7)
+        result,output=self.fx.receive(plan,failure,None);self.assert_result(result,output,"fail")
+        alternate=Path('/System/Volumes/Data')/self.fx.state.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.fx.state,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        clone=self.fx.root/"second-clone"
+        self.fx.git("-c","core.hooksPath="+os.devnull,"clone","--no-hardlinks",str(self.fx.repo),str(clone))
+        record=self.fx.state/plan["plan_id"]/"record.json";before=record.read_bytes()
+        positive,_=self.fx.facts(plan,0);arguments=self.fx.inputs(positive,None)
+        with target_lock(self.fx.state,self.fx.repo):
+            # Different physical clones can take their outer locks independently.
+            with target_lock(self.fx.state,clone):pass
+            with target_lock(self.fx.state,record.parent):
+                result,output=self.fx.run("import","--repo",str(clone),"--state",str(alternate),"--plan",plan["plan_id"],*arguments)
+                self.assertEqual(result.returncode,2,result.stderr)
+                self.assertIsNone(output)
+                self.assertEqual(record.read_bytes(),before,"contending clone rewrote retained failure")
+        result,output=self.fx.run("import","--repo",str(clone),"--state",str(alternate),"--plan",plan["plan_id"],*arguments)
+        self.assert_result(result,output,"fail")
+        _,stored=load(self.fx.state,plan["plan_id"])
+        self.assertEqual(stored["failure"][0]["record"]["outcome"]["exit_code"],7)
+
+    def test_safe_subject_alias_and_normal_spelling_share_context(self):
+        alternate=Path('/System/Volumes/Data')/self.fx.repo.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.fx.repo,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        result,output=self.fx.run("doctor","--repo",str(alternate))
+        self.assertEqual(result.returncode,2,result.stderr)
+        self.assertIsNotNone(output,result.stderr)
+        plan=parse_json(Path(output["record"]).read_bytes())
+        envelope,_=self.fx.facts(plan,7)
+        result,output=self.fx.receive(plan,envelope,None)
+        self.assert_result(result,output,"fail")

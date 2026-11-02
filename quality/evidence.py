@@ -1,10 +1,11 @@
 """Owned evidence primitives shared by versioned orchestrators."""
 from __future__ import annotations
 
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from datetime import datetime, timezone
 import fcntl
 import os
+import stat
 from pathlib import Path
 from typing import Any, Iterator
 import uuid
@@ -78,12 +79,38 @@ def save(path: Path, report: dict[str, Any], schema: str = "report") -> None:
 
 
 @contextmanager
+def _descriptor(path: Path, flags: int) -> Iterator[int]:
+    fd = os.open(path, flags, 0o600)
+    try:
+        yield fd
+    finally:
+        os.close(fd)
+
+
+def _private_regular(info: os.stat_result) -> None:
+    if not stat.S_ISREG(info.st_mode) or info.st_mode & 0o077 or info.st_uid != os.geteuid():
+        raise Invalid("private-regular-lock-required")
+
+
+@contextmanager
 def target_lock(state: Path, repo: Path) -> Iterator[None]:
-    lock = state / ("target-" + sha(os.fsencode(repo)) + ".lock")
-    fd = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
-    with os.fdopen(fd, "r+b") as stream:
-        try:
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as exc:
-            raise Invalid("target-run-already-active") from exc
+    with ExitStack() as resources:
+        directory = resources.enter_context(_descriptor(repo, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW))
+        info = os.fstat(directory)
+        if not stat.S_ISDIR(info.st_mode):
+            raise Invalid("lock-directory-required")
+        identity = sha(canonical([info.st_dev, info.st_ino]))
+        locks = (state / ("target-object-v1-" + identity + ".lock"),
+                 state / ("target-" + sha(os.fsencode(repo)) + ".lock"))
+        for lock in locks:
+            try:
+                _private_regular(lock.lstat())
+            except FileNotFoundError:
+                pass
+            fd = resources.enter_context(_descriptor(lock, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK))
+            _private_regular(os.fstat(fd))
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise Invalid("target-run-already-active") from exc
         yield

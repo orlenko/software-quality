@@ -90,7 +90,13 @@ def regular_bytes(path: Path, limit: int) -> bytes:
 
 
 def within(path: Path, root: Path) -> bool:
-    return path.resolve().is_relative_to(root.resolve())
+    try:
+        outside_path(path, [root])
+    except Invalid as exc:
+        if str(exc) == "path-traverses-protected-root":
+            return True
+        raise
+    return False
 
 
 def raw_absolute(path: Path) -> Path:
@@ -107,12 +113,26 @@ def _walk_path(path: Path, roots: tuple[Path, ...], *, strict: bool,
     pending = deque(parts[1:])
     current = Path("/")
     links = work = 0
+    identities: set[tuple[int, int]] = set()
+    for root in roots:
+        try:
+            info = root.lstat()
+        except FileNotFoundError:
+            continue  # Future creation roots retain lexical protection.
+        except OSError:
+            raise Invalid("protected-root-inspection-unavailable") from None
+        identities.add((info.st_dev, info.st_ino))
 
-    def protected(candidate: Path) -> None:
-        if any(candidate.is_relative_to(root) for root in roots):
+    def protected(candidate: Path, info: os.stat_result | None = None) -> None:
+        if (any(candidate.is_relative_to(root) for root in roots)
+                or info is not None and (info.st_dev, info.st_ino) in identities):
             raise Invalid("path-traverses-protected-root")
 
-    protected(current)
+    try:
+        filesystem_root = current.lstat()
+    except OSError:
+        raise Invalid("filesystem-root-inspection-unavailable") from None
+    protected(current, filesystem_root)
     while pending:
         work += 1
         if work > 512:
@@ -140,6 +160,7 @@ def _walk_path(path: Path, roots: tuple[Path, ...], *, strict: bool,
             return candidate
         except (OSError, ValueError):
             raise Invalid("path-inspection-unavailable") from None
+        protected(candidate, info)
         if stat.S_ISLNK(info.st_mode):
             if not pending and not final_symlink:
                 raise Invalid("terminal-symlink-refused")
@@ -154,7 +175,7 @@ def _walk_path(path: Path, roots: tuple[Path, ...], *, strict: bool,
                 raise Invalid("unsupported-path-anchor")
             if destination.is_absolute():
                 current = Path("/")
-                protected(current)
+                protected(current, filesystem_root)
                 pending.extendleft(reversed(destination.parts[1:]))
             else:
                 pending.extendleft(reversed(destination.parts))
@@ -285,7 +306,8 @@ class Git:
                 suffix = key.rsplit(".", 1)[-1].lower()
                 if suffix in {"clean", "smudge", "process", "required"}:
                     self.filter_overrides.extend(["-c", key + ("=false" if suffix == "required" else "=")])
-        if Path(self.run("rev-parse", "--show-toplevel").decode().strip()).resolve() != self.repo:
+        reported = subject_root(Path(self.run("rev-parse", "--show-toplevel").decode().strip()))
+        if not (within(reported, self.repo) and within(self.repo, reported)):
             raise Invalid("repository-root-required")
         alternates = Path(self.run("rev-parse", "--git-path", "objects/info/alternates").decode().strip())
         if not alternates.is_absolute():

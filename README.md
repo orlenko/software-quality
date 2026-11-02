@@ -19,7 +19,8 @@ and [new evidence record](docs/reviews/approved-path-fix-v01.md). New patch arti
 qualification is separate from source integration and consumer pin approval.
 
 Approved selector paths are inspected component by component before canonicalization.
-Any hop through the subject is refused, even when symlinks or parents later exit it.
+A checked subject hop is refused even when symlinks or parents later exit it;
+existing root device/inode identity also detects stable alternate root spellings.
 Safe outside aliases and relative inputs are supported; relative tool inputs starting
 inside the subject are refused. Existing final-symlink restrictions remain in force.
 Inspection is bounded to 40 link expansions and 512 components on a stable owner
@@ -46,8 +47,8 @@ flags, Python startup code can execute before a script can refuse it.
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/build.py --output dist/software-quality-0.1.2.pyz
-python3 -I -S tools/test.py --artifact dist/software-quality-0.1.2.pyz
+python3 -I -S tools/build.py --output dist/software-quality-0.1.2-root-alias.pyz
+python3 -I -S tools/test.py --artifact dist/software-quality-0.1.2-root-alias.pyz
 ```
 
 Tests use invented disposable repositories and recorded reviewer responses, without
@@ -75,7 +76,7 @@ SOURCE=REPLACE_WITH_APPROVED_FULL_SOURCE_COMMIT
 DIGEST=REPLACE_WITH_APPROVED_ARTIFACT_SHA256
 CACHE=/path/to/private/quality-cache
 python3 -I -S "$TOOLKIT/quality_launch.py" install \
-  --artifact "$TOOLKIT/dist/software-quality-0.1.2.pyz" \
+  --artifact "$TOOLKIT/dist/software-quality-0.1.2-root-alias.pyz" \
   --sha256 "$DIGEST" --source "$SOURCE" --cache "$CACHE"
 ```
 
@@ -218,8 +219,8 @@ Synthetic qualification does not establish a real producer, controller or adopti
 ```sh
 python3 -I -S tools/test_external.py
 # Requires a clean reviewed source commit; output must not already exist.
-python3 -I -S tools/build_external.py --output dist/software-quality-external-0.2.2.pyz
-python3 -I -S tools/test_external.py --artifact dist/software-quality-external-0.2.2.pyz
+python3 -I -S tools/build_external.py --output dist/software-quality-external-0.2.2-root-alias.pyz
+python3 -I -S tools/test_external.py --artifact dist/software-quality-external-0.2.2-root-alias.pyz
 ```
 
 The [owned real-executed fixture qualification](docs/reviews/external-fixture-qualification-v01.md)

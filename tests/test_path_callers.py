@@ -14,7 +14,7 @@ import tests
 from tests.support import Fixture, ROOT
 
 
-class PathCallerTests(unittest.TestCase):
+class MarkerCallerCase(unittest.TestCase):
     def setUp(self) -> None:
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name).resolve();self.fx=Fixture(self.root)
@@ -57,6 +57,8 @@ class PathCallerTests(unittest.TestCase):
         self.assertFalse(self.marker.exists(),"unsafe selected helper or auth route was used")
         self.assertFalse(self.fx.state.exists(),"unsafe selector reached core invocation")
 
+
+class PathCallerTests(MarkerCallerCase):
     def test_frontend_every_tool_and_auth_role_refuses_both_hidden_forms(self) -> None:
         for role,name in (("--python","helper"),("--launcher","helper.py"),("--github-cli","helper"),("--github-config","auth")):
             for parent in (False,True):
@@ -205,6 +207,56 @@ class CorePathTests(unittest.TestCase):
             self.assertEqual(review["reason"],"path-traverses-protected-root")
 
 
+    def test_state_cache_reverse_alias_ancestor_refuses_bootstrap_and_core(self) -> None:
+        common=self.root/"private-common";common.mkdir(mode=0o700)
+        cache=common/"cache";cache.mkdir(mode=0o700)
+        package=cache/(self.fx.digest+".pyz");package.write_bytes(self.fx.package.read_bytes())
+        alternate=Path('/System/Volumes/Data')/common.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(common,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        for direct in (False,True):
+            result=subprocess.run(self.direct("--state",str(alternate),package=package),capture_output=True,text=True,timeout=15) if direct else self.fx.launch(*self.fx.command("doctor","--cache",str(cache),"--state",str(alternate)))
+            self.assertEqual(result.returncode,2,result.stderr)
+            self.assertEqual(set(common.iterdir()),{cache},"ancestor state root was written")
+
+    def test_cache_reverse_target_and_toolkit_alias_ancestors_refuse(self) -> None:
+        alternate=Path('/System/Volumes/Data')/self.root.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.root,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        (self.root/(self.fx.digest+".pyz")).write_bytes(self.fx.package.read_bytes())
+        with tempfile.TemporaryDirectory() as other:
+            state=Path(other)/"state"
+            result=self.fx.launch(*self.fx.command("doctor","--cache",str(alternate),"--state",str(state)))
+            self.assertEqual(result.returncode,2,result.stderr)
+            self.assertFalse(state.exists(),"cache ancestor of target was accepted")
+        common=self.root/"toolkit-common";toolkit=common/"toolkit";toolkit.mkdir(parents=True)
+        for name in ("quality_launch.py","quality_trust.py"):(toolkit/name).write_bytes((ROOT/name).read_bytes())
+        alias=Path('/System/Volumes/Data')/common.relative_to('/')
+        command=[sys.executable,"-I","-S",str(toolkit/"quality_launch.py"),"install","--artifact",str(self.fx.package),
+                 "--sha256",self.fx.digest,"--source",self.fx.source,"--cache",str(alias)]
+        result=subprocess.run(command,capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,2,result.stderr)
+        self.assertFalse((common/(self.fx.digest+".pyz")).exists())
+        command[-1]=str(alias/"safe-sibling-cache")
+        result=subprocess.run(command,capture_output=True,text=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue((common/"safe-sibling-cache"/(self.fx.digest+".pyz")).is_file())
+
+
+    def test_safe_subject_root_namespace_alias_is_accepted_but_nested_root_refuses(self) -> None:
+        from quality_trust import Git,Invalid
+        alternate=Path('/System/Volumes/Data')/self.fx.repo.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.fx.repo,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        self.assertEqual(Git(alternate).commit(self.fx.head),self.fx.head)
+        nested=self.fx.repo/"nested";nested.mkdir()
+        with self.assertRaisesRegex(Invalid,"repository-root-required"):Git(nested)
+        result=self.fx.launch(*self.fx.command("doctor","--repo",str(alternate)))
+        self.assertEqual(result.returncode,2,result.stderr)
+        self.assertIn(self.fx.digest,result.stdout)
+        self.assertTrue(list(self.fx.state.glob("*/report.json")))
+
+
 class ExternalShimPathTests(unittest.TestCase):
     def test_raw_entry_is_checked_before_derived_bootstrap(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -273,3 +325,27 @@ with patch.object(trust,'outside_path',side_effect=inspected):
                 self.assertEqual(result.returncode,2,result.stderr)
                 self.assertFalse(self.marker.exists(),"unsafe default helper executed")
                 self.assertFalse(self.fx.state.exists())
+
+
+class PlatformAliasCallerTests(MarkerCallerCase):
+    def test_stable_root_alias_all_tool_auth_and_shim_roles(self) -> None:
+        alternate=Path('/System/Volumes/Data')/self.fx.repo.relative_to('/')
+        if not alternate.exists() or not os.path.samefile(self.fx.repo,alternate):
+            self.skipTest('no stable alternate root namespace available on this platform')
+        self.alias.unlink();self.alias.symlink_to(alternate/"traversal",target_is_directory=True)
+        for parent in (False,True):
+            for role,name in (("--python","helper"),("--launcher","helper.py"),("--github-cli","helper"),("--github-config","auth")):
+                for destination in (self.a,self.b):
+                    with self.subTest(parent=parent,role=role,destination=destination.name):
+                        self.retarget(destination)
+                        command=self.frontend_command(metadata=role.startswith("--github"))
+                        command[command.index(role)+1]=str(self.value(name,parent))
+                        self.run_refusal(command)
+            for role,name in (("--python","helper"),("--launcher","helper.py")):
+                for destination in (self.a,self.b):
+                    with self.subTest(parent=parent,shim_role=role,destination=destination.name):
+                        self.retarget(destination)
+                        command=[sys.executable,"-I","-S",str(self.shim),"--launcher",str(ROOT/"quality_launch.py"),
+                                 "--python",sys.executable,*self.fx.command("doctor")]
+                        command[command.index(role)+1]=str(self.value(name,parent))
+                        self.run_refusal(command)

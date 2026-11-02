@@ -28,9 +28,9 @@ From a clean reviewed adapter-source checkout:
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.2.zip
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.2-root-alias.zip
 python3 -I -S tools/test.py \
-  --artifact dist/software-quality-0.1.2.pyz --adapter-bundle dist/quality-adapters-0.1.2.zip
+  --artifact dist/software-quality-0.1.2-root-alias.pyz --adapter-bundle dist/quality-adapters-0.1.2-root-alias.zip
 ```
 
 The runtime and adapter source identities are separate. Build the runtime from a

@@ -99,7 +99,7 @@ change occurs here. Darwin/Python3.14.7 is the observed platform; Linux/Python3.
 live providers/reviewers, hostile-code containment and consumer adoption remain
 unqualified. A new exact source proposal follows only after the remaining gates.
 
-## Runtime R actual-byte qualification
+## Initial runtime R actual-byte qualification (held)
 
 Reviewed clean runtime source R is `6ab57e0d0f6dbc786d081ec85d34bdc7230b3503`, tree
 `cde0338ea84f6fa3ccaf62c3b52a926228c27574`. The staged source/publication gate was
@@ -138,3 +138,87 @@ The final known-failure invocation remains1. Parent/no-parent receipt/observer p
 terminal-link refusal and immutable retained failure slots are exercised too.
 Adapter-A build/qualification, final aggregate and publication checks remain pending
 at this checkpoint.
+
+## Stable root alias finding and reviewed correction
+
+Final qualification inspection found a supported Darwin namespace alias that is
+not a symbolic link: two spellings of the same owned root have equal device/inode
+identity and distinct resolved strings. An owned inert fixture demonstrated that
+the first lexical-only R walker missed that root before a subject-controlled link
+selected an outside object. No tool/authentication or consumer was used. The actual
+R88/external50 and adapter31 passes did not exercise this case and cannot clear it.
+
+The initial adapter A is `48b6c9fb5b247d21f1d5bcfbe50b77b8786f5e0b`, tree
+`2b7e7eb1b686a7f8564f504d53d858cddc3d9cc5`; its unchanged local bundle
+`quality-adapters-0.1.2.zip` has digest
+`cdeea80ed1b58852f1843b2efc3df08ba50a4dc18365c165a41a6b8876b39130`.
+Its31 selected context/shim/marker checks passed, but it and the two R archives
+above remain HELD. Their source identities/bytes and observed results stay historical.
+
+The pre-code amendment `0402ef373d428eedd505c66997fecc6613339b9f` records independent
+design acceptance of a bounded identity check inside the SAME walker. Existing
+protected roots contribute observed device/inode identity; each existing component
+is checked against those identities immediately after lstat and before another hop.
+Future missing roots retain lexical protection without invented identity data.
+This handles the verified stable root alias; it is not a universal mount/subtree,
+permission, signing or race-free capability proof.
+
+Independent source/fix review cleared the addition and its tests. The first14
+root/walker/selector checks passed, including the real owned platform alias and an
+injected identity safe/negative control. The marker matrix covers both forms and
+A/B for every frontend tool/auth role and simple-shim selector. The external receipt
+case refuses valid-looking natural7 bytes behind the same protected alias, leaving
+original/failure slots empty. No unsafe helper or auth route executes. The expanded33-case new-source
+selection passed, including all new alias cases and prior path/data/default controls.
+Source review then identified the initial filesystem-root component as another
+identity boundary: it and absolute-link resets now use one observed root stat.
+The three-case RootIdentity recheck passed, including a portable alias-of-root
+refusal and distinct safe control. The later code still requires new R2/A2 checks.
+
+New exact runtime R2 and later adapter A2 use distinct `-root-alias` filenames with
+the same authorized unreleased patch versions. Adapter compatibility is reset to
+pending until R2's actual core is qualified. Nothing overwrites or relabels R/A or
+earlier sources/archives. Actual R2/A2 qualification and final aggregate/publication
+review remain pending at this checkpoint; no earlier cancelled main target revives.
+
+## Alias-consistent separation and private locking
+
+The same review found two related contracts still comparing path strings. Reverse
+state/cache/toolkit/target separation now reuses the SAME protected walker in
+within and external overlap checks, in both directions. Only exact protected-root
+rejection becomes membership; unreadable/unsupported/budget errors propagate.
+
+Existing private advisory locks also hashed spelling, so two clones could use
+state aliases to take different plan locks and overwrite a retained failure.
+Pre-code amendment `02bf885` records independent critique and closure requirements.
+The correction keeps an opened no-follow directory descriptor and acquires a
+separate object-identity lock, then the legacy spelling lock, throughout the critical
+section/recovery. Partial failures close every descriptor; locks are never unlinked.
+Lock objects must be regular/private/same-owner and nonblocking; malformed plan IDs
+are rejected by the shared private-directory helper before identifier-derived lookup.
+This preserves earlier same-spelling coordination without clearing old unsafe alias
+routes or migrating any pin/state. It does not assert a hostile-filesystem capability.
+
+The eight owned lock/separation tests passed, covering alias contention, safe sibling
+control, legacy-second-lock contention release, noninheritable descriptor cleanup,
+interrupted partial acquisition, nonregular/private lock refusal, and malformed IDs
+before lookup. A twelve-case wiring selection found one inherited direct-core omission:
+state could physically contain the runtime/cache root because the reverse check
+was absent. Adding all bidirectional repo/tool/state checks fixed it; the focused
+recheck passed. The other eleven cases passed, including actual CLI contention from
+a second physical clone sharing an aliased plan: no record bytes changed while
+blocked, and retained natural7 returned failure after release. These are fresh owned
+fixtures, not old consumer/fixture executions or renewed receipts.
+
+Independent source/fix review cleared the identity, separation and locking additions.
+New exact R2/A2 artifacts and full affected checks remain pending; none of the earlier
+R/A passes are transferred to these changed bytes.
+
+The expanded46-case new-source selection passed after those fixes. A final safe
+control exposed another string comparison: hardened Git can report the normal
+spelling of a repository selected through its stable namespace alias. Git root
+comparison now uses bidirectional same-walker membership, accepting the equivalent
+root while refusing a nested directory. The two-case positive core/CLI and external
+alias-doctor-to-normal-import control passed in1.488 seconds. Both independent
+source/fix reviews cleared the resulting source; exact R2/A2 qualification remains
+pending and earlier candidates stay held.
