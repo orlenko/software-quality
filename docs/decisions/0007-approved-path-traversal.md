@@ -260,3 +260,49 @@ R2 and adapter source A2. Patch identities stay the authorized unreleased0.1.2/0
 0.1.2, but new filenames include `-root-alias`; no earlier local archive is overwritten
 or relabeled. Rebind adapter metadata only after the new core's actual qualification,
 then return a new exact source proposal after aggregate review. Main is unchanged.
+
+## Alias-consistent separation and lock identity
+
+Independent review identified two related existing contracts that also need the
+verified stable-root aliases, before replacement source freezes. Reverse separation
+cannot compare canonical strings: state under one spelling may physically contain
+cache/toolkit under another. Reuse the SAME protected walker in within() and the
+external bidirectional overlap predicate. Catch only protected-root rejection as
+membership; propagate other inspection failures honestly. This introduces no second
+path engine or weaker separation rule. Add injected identity and real owned alias
+ancestor/sibling controls for state/cache, toolkit/cache and target/cache.
+
+Existing advisory locks hash path spelling. Equivalent target/state spellings can
+therefore create different lock files; imports from distinct physical clones sharing
+one physical plan could both read a baseline and overwrite a retained failure. Use
+stable observed directory object identity for the shared lock key, holding an opened
+non-follow directory descriptor during the lock lifetime. This is private advisory
+coordination, not target execution/permission or universal namespace containment.
+Keep the legacy spelling lock too, in a fixed object-lock-then-spelling-lock order,
+to preserve coordination with earlier same-spelling operations; the held old alias
+routes are not newly qualified. Do not delete/migrate old lock/state files or transfer
+old pin approvals. Device/inode metadata is local and never becomes a public subject
+identity or signature. No protocol/schema/policy field changes are introduced.
+
+Plan identifiers must be validated as the existing bounded hex identifier BEFORE
+any path lookup/open for a lock object. Reuse the private existing-plan-directory
+validation before locking and loading; reject missing/symlink/nonprivate plans. Test
+malformed IDs cause no lookup, equivalent target-root locks collide, and two distinct
+clones' inner plan locks collide across state aliases. Use owned directories and
+nested nonblocking lock attempts or benign owned multiprocessing, no real consumer
+or private auth. Failure priority/atomic ledger rules remain unchanged; actual mixed
+old unsafe aliases are not claimed compatible. Independently critique this lock
+amendment before implementation, then re-review source/tests and requalify R2/A2.
+
+Independent lock/separation design critique accepted the direction with four
+requirements, recorded before this implementation: membership catches ONLY the
+exact protected-root diagnostic and propagates all other errors, using already
+validated operands; hold the no-follow directory identity FD and BOTH lock FDs for
+the entire critical section/recovery and close every partial acquisition on error;
+use a distinct object-lock filename namespace, never unlink locks, and require
+opened locks to be regular/private with nonblocking special-file refusal; validate
+plan IDs before any identifier-derived lookup/lock, without claiming unrelated
+approved CLI context work did not occur. Existing same-owner/private-state and
+stable-filesystem assumptions remain explicit. Add a second-lock contention release
+case and known-failure retention after alias contention. No structural blocker was
+found once these details were recorded; source/fix and actual-byte gates remain.
