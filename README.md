@@ -167,9 +167,12 @@ python3 -I -S "$TOOLKIT/adapters/quality.py" \
 ```
 
 It delegates policy/verdicts and accepted-base pin selection to shared code and
-cannot override the `check` artifact. Harness registration as `/quality` or
-`$cmd_quality`, PR lookup, automated live review, enforced untrusted execution,
-release publication and consumer rollout remain later work. There is no `quality
+cannot override the `check` artifact. The separate [command/context candidate](docs/command-adapters.md)
+adds shared skill templates, offline explicit context and optional authorized
+read-only GitHub metadata. Templates are shipped, not installed/registered;
+documented local entry spellings are `/quality` and `$cmd-quality`, with no promised
+underscore alias. Automated live review, enforced untrusted execution, release
+publication and consumer rollout remain later work. There is no `quality
 design` command. Every stronger local review route must be represented; one generic
 attestation cannot replace multiple required reviews. See the
 [implementation decision](docs/decisions/0001-minimal-runner.md).

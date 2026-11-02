@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quality"
+  short_description: "Run the accepted pinned quality workflow"
+  default_prompt: "Use $cmd-quality for the current personal repository change."

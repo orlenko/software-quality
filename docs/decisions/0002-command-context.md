@@ -135,3 +135,10 @@ potentially truncated candidate pages, allowlist receipt fields, reuse trusted
 `quality_trust.py` primitives, validate complete packaged skill references, and
 retain immutable target/core/context identities on cancellation or lookup failure.
 No target execution, private inputs or live metadata request occurred in critique.
+
+Source-review corrections retain exact Unicode branch identity and disable gh
+telemetry/update checks. Metadata uses bounded in-memory streaming and an owned
+process group, reusing the unchanged `quality.process.stop` primitive; the bundle
+ships that same owned source alongside the trusted Git/JSON helper. Timeout (1-15
+seconds), overflow and handled cancellation stop/reap the group. Known immutable
+targets are retained before subsequent metadata checks. None changes runner policy.

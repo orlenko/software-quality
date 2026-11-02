@@ -1,0 +1,13 @@
+{
+  "adapter_version": "0.1.0",
+  "adapter_protocol": 1,
+  "runner_engine": "0.1.0",
+  "runner_policy": "0.1",
+  "runner_schema": 1,
+  "tested_runner_source": "74b9b498058b11a3d99409e2d1166cbf9d171e9e",
+  "tested_runner_sha256": "9403401102f01d87991fb2de5405eff4b7012480c955e858b8bb0a0fa2bee6a2",
+  "pin_selection": "accepted-base-lock-through-approved-launcher",
+  "review_interface": "recorded-v1-external-attestation",
+  "installed_or_registered": false,
+  "live_metadata_or_harness_tested": false
+}

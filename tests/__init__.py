@@ -2,3 +2,4 @@
 from pathlib import Path
 
 ARTIFACT: Path | None = None
+ADAPTER_ROOT: Path | None = None
