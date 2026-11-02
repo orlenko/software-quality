@@ -1,8 +1,31 @@
 # Approved path traversal correction
 
 This record covers new core0.1.2, external0.2.2 and adapter0.1.2 candidates. Policy
-0.1, schema structures1/2 and protocols1/2 are unchanged. Main remains e543e1a;
-previous exact source integrations are cancelled. No consumer or release is cleared.
+0.1, schema structures1/2 and protocols1/2 are unchanged. No consumer or release is
+cleared. The qualification sections below the dated update preserve historical
+checkpoints; their pending gates and no-main-update statements describe those stages.
+
+## Source integration update (2026-11-02)
+
+The reviewed source was integrated into local and remote main by ordinary
+fast-forward from `e543e1a9a27d44e3ec04e862dfb184858985e260` to
+`aa7d0256d29e283b257155a4f4d7ceec3459e3d0`, tree
+`a8e12eea742fab78c2889ec0d5bf280237acf641`. The separately authorized operation
+reused the exact independent aggregate source and final documentation/publication
+reviews, inspected the push dry run before mutation, and verified matching final
+local/remote identities and clean tracked state. Earlier cancelled exact proposals
+were not reopened or substituted.
+
+All 13 named original/interim/new archive identities, prior work refs and historical
+source/bootstrap identities were preserved. Runtime artifacts still come from R2
+`db120201d3f38d1c6e444bc4d1ca9586c3d8eee0`; the adapter bundle still comes from A2
+`ac3e3e7e376c565d70cc53914fc458230d102465`. Their exact digests are in the
+[candidate inventory](../cases/approved-path-candidates-v01.json). Neither the
+integrated source head nor a later documentation commit becomes their build source.
+No tests, builds or expired fixtures were rerun for the ref operation, and no
+artifact was rebuilt, relabeled or newly qualified. Historical held candidates stay
+held. Source integration establishes no release, consumer installation, pin/state
+migration or adoption; all recorded platform, reviewer and execution limits remain.
 
 [Decision 0007](../decisions/0007-approved-path-traversal.md) records the pre-code
 selector inventory, effects, alternatives, failure/compatibility/version plan and

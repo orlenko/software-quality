@@ -212,8 +212,10 @@ The separate [external gate candidate](docs/external-import-v02.md) implements
 schema2 validation of one already-known committed target and externally supplied
 canonical-gate/controller evidence. It never runs that gate. Engine `0.2.2`,
 policy `0.1` and protocol2 require their own accepted pins; v1 inputs are rejected.
-This work-branch candidate has no release or consumer installation. Its source
-integration and local artifact qualification are separate gates.
+The reviewed source is integrated; it has no release or consumer installation. The
+[source integration update](docs/reviews/approved-path-fix-v01.md#source-integration-update-2026-11-02)
+records the operation and distinct artifact build sources. Source integration and
+local artifact qualification are separate gates.
 Synthetic qualification does not establish a real producer, controller or adoption.
 
 ```sh

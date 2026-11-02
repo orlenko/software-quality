@@ -1,5 +1,11 @@
 # Process ownership and failure-finalization correction
 
+Current-status note (2026-11-02): this is a historical qualification record. Its
+main-status and pending-integration statements describe that earlier checkpoint.
+The later [source integration update](approved-path-fix-v01.md#source-integration-update-2026-11-02)
+records the completed source operation. The exact artifacts and observations below
+remain historical; their held status and qualification limits are unchanged.
+
 This record covers new patch candidates core/adapter 0.1.1 and external 0.2.1.
 Policy 0.1, schema structures 1/2 and adapter protocols 1/2 are unchanged. It does
 not upgrade a consumer or replace earlier frozen artifacts. The older source
