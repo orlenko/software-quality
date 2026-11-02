@@ -222,3 +222,32 @@ root while refusing a nested directory. The two-case positive core/CLI and exter
 alias-doctor-to-normal-import control passed in1.488 seconds. Both independent
 source/fix reviews cleared the resulting source; exact R2/A2 qualification remains
 pending and earlier candidates stay held.
+
+## Replacement runtime R2 actual-byte qualification
+
+The reviewed replacement runtime source is
+`db120201d3f38d1c6e444bc4d1ca9586c3d8eee0`, tree
+`4fb13d26626481d5411959c41f0b06a43ad978f5`. Staged/working bytes and publication
+checks matched the independently reviewed source. Both new archives built twice
+with identical repeat bytes; no older archive was changed.
+
+| Replacement local archive | SHA-256 | Members |
+| --- | --- | --- |
+| `dist/software-quality-0.1.2-root-alias.pyz` | `7b87b9c23fbaf43941729f8bb2b0e1969fbf6872b02d8dbd23e074714bc526b0` | 29 |
+| `dist/software-quality-external-0.2.2-root-alias.pyz` | `0eec1d48dfa76fe898c4a00673367067da69849d366881cdad82778b5861308a` | 20 |
+
+The actual replacement core selection passed103 tests in57.816s; the actual external
+selection passed54 in85.916s. These reuse the affected regression selection on NEW
+bytes and add the root-identity, reverse-separation, safe Git alias and advisory-lock
+cases. No skipped platform alias cases occurred on the observed Darwin host. Counts
+remain mixed: pure walker/lock/fault helpers use source, ordinary/direct CLI/default
+cases use the actual selected archive, and the copied protocol2 marker-bootstrap
+experiment stays source-only. The two-clone/state-alias case exercises the actual
+external CLI against a held shared plan lock, confirms no record rewrite, then returns
+retained failure after release. No passing count transfers from held R/A.
+
+Inventories, every payload digest, generated entrypoint literals and committed source
+blobs match R2. Actual expanded-core import origins/evidence aliases and the external
+whitelist were rechecked in isolated Python. Compatibility now records this observed
+R2 core source/digest; later A2 changes metadata/evidence only. A2 bundle qualification
+and final aggregate/publication gates are still pending at this checkpoint.
