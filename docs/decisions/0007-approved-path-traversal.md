@@ -230,3 +230,33 @@ cleared the inventory for implementation: no further caller/authority conflict w
 found. Walker correctness, independent source/fix review and actual candidate
 qualification remain separate gates. The independent design critique accepted the
 single-walker architecture and version/closure sequence with these recorded rules.
+
+## Stable system aliases discovered during final qualification
+
+After the first R/A candidates passed their selected checks, final owned namespace
+inspection found a supported-platform alias not represented by a symlink: on this
+Darwin host, two spellings of the same owned checkout/root have equal device/inode
+identity and distinct resolved strings. An inert ignored fixture confirmed the
+lexical-only walker could traverse that alternate subject spelling, then a head-
+controlled link, and accept an outside object. No real tool/authentication or consumer
+was used. The first R/A archives stay unchanged and held; passing counts did not
+cover this alias and cannot waive it.
+
+Independent design critique accepted a bounded correction inside the SAME walker:
+for existing protected roots, record observed (device,inode) identity. In addition
+to lexical prefix protection, reject a traversed existing component whose lstat
+identity equals such a root, before following another hop or leaving through a
+parent. Missing future cache/state roots keep lexical protection without invented
+identity evidence. This inspects only the supplied paths/roots; it introduces no
+mount-table enumeration, permission/signature proof or hostile-mount capability.
+The universal-filesystem limitation does not waive this confirmed stable system
+alias. Initial approved loading and stable-owner-namespace assumptions remain.
+
+Add portable injected-identity and real owned platform-alias negative controls for
+parent/no-parent paths and selector execution/auth use. Preserve safe /var aliases,
+canonical-client/auth and caller-relative controls. Independently review and qualify
+this affected shared primitive/caller closure again from a new exact runtime source
+R2 and adapter source A2. Patch identities stay the authorized unreleased0.1.2/0.2.2/
+0.1.2, but new filenames include `-root-alias`; no earlier local archive is overwritten
+or relabeled. Rebind adapter metadata only after the new core's actual qualification,
+then return a new exact source proposal after aggregate review. Main is unchanged.
