@@ -174,3 +174,36 @@ The reviewer accepted patch identity constants within unchanged schema structure
 and the runtime-S/adapter-S2 sequence. Deterministic bootstrap-forwarding/reaping and
 finalization-phase tests join the acceptance plan. No code, tests, imports, writes
 or Git metadata mutations occurred in critique; no architectural blocker remains.
+
+## Legacy shim correction found during aggregate audit
+
+The final source audit found one advertised caller outside the corrected relay:
+`adapters/quality.py` still used `subprocess.call`. SIGTERM could end the shim while
+its bootstrap/runner continued; Ctrl-C could kill the direct bootstrap before owned
+cancellation and failure handoff. The context-only bundle checks did not cover it.
+The earlier new adapter candidate stays unchanged and is held from integration.
+
+The smallest correction reuses the adjacent approved frontend's `launch` helper
+and the existing shared cancellation/diagnostic utility. Keep the explicit approved
+Python/launcher argv, protocol 1 and accepted pin authority. Require the same complete
+source/bundle resource closure; import no target code. Install cancellation handlers
+through relay cleanup and diagnostic delivery. Return 1 for an observed core failure,
+otherwise 2 for interrupted/unverified relay work. The external shim already enters
+its corrected bootstrap in the same process and adds no second subprocess relay.
+
+Acceptance adds direct simple-shim source and actual-bundle checks: SIGTERM and
+SIGINT for active work without a known failure and naturally completed nonzero work,
+current invocation interruption evidence, exit 2/1, stopped benign owned descendants,
+explicit pin/protocol refusal and missing-resource refusal. Use finite owned gates
+and read-only process observations; no forced PID reuse or unrelated signals. The
+runtime S archives remain byte-identical; only adapter source/tests/docs change.
+Build a separately named adapter candidate from a new reviewed source commit,
+verify its closure/core pins and run the affected bundle checks. Re-review fixes
+before the final integration proposal; no main action follows from this correction.
+
+The independent inspection-only amendment critique accepted reuse of the shared
+relay before code. It required incomplete/exit 2 for missing closure rather than an
+import traceback/exit 1, normal 0/1/2 preservation, failure precedence through
+cleanup/diagnostics, no raw signaling, and actual source/bundle-layout coverage.
+It accepted a new adapter source containing this correction while runtime S stays
+unchanged. The earlier metadata-only S2 description applies only to the held bundle.
