@@ -1,0 +1,14 @@
+.DS_Store
+.local/
+.env
+.env.*
+!.env.example
+.quality/runs/
+.quality/cache/
+.quality/installs/
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+*.pyc
