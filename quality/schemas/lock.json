@@ -18,7 +18,7 @@
       "pattern": "[0-9a-f]{64}"
     },
     "version": {
-      "const": "0.1.1"
+      "const": "0.1.2"
     },
     "policy_version": {
       "const": "0.1"

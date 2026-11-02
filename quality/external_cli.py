@@ -8,7 +8,7 @@ import signal
 import sys
 import subprocess
 
-from quality_trust import Cancellation, write_output, EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, canonical, regular_bytes
+from quality_trust import Cancellation, write_output, EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, canonical, regular_bytes, outside_path, runtime_python, subject_root
 from quality.evidence import target_lock
 from quality.external_clock import read
 from quality.external_model import metadata, subject
@@ -48,7 +48,9 @@ def import_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
     try:
         if not sys.flags.isolated or not sys.flags.no_site or os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("unsupported-runtime")
-        package = Path(sys.argv[0]).resolve(strict=True)
+        repo = subject_root(args.repo)
+        package = outside_path(Path(sys.argv[0]), [repo], strict=True, final_symlink=False)
+        runtime_python([repo])
         artifact(regular_bytes(package, MAX_ARTIFACT), args.artifact_sha256, args.source,
                  version=EXTERNAL_VERSION, schema_version=2, entrypoint="quality/external_cli.py")
         if args.trusted_head is not None and args.trusted_head != args.head:
@@ -58,10 +60,9 @@ def import_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
             raise Invalid("doctor-cannot-import")
         if args.command == "import" and not args.plan:
             raise Invalid("import-requires-plan")
-        repo = args.repo.resolve(strict=True)
         root = state_root(args.state, [repo, package.parent])
         git = Git(repo)
-        clock = read()
+        clock = read(protected_roots=[repo])
         context, config, error = None, None, None
         try:
             context, config = subject(git, args.base, args.head, args.identity, args.artifact_sha256,
@@ -75,10 +76,10 @@ def import_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
                 raise KeyboardInterrupt
             if args.command == "doctor":
                 assert context is not None and config is not None
-                state = create(root, context, config, clock)
+                state = create(root, context, config, clock, protected_roots=[repo])
                 if metadata(git, config) != context["metadata"]:
                     gap(state, "source-moved-during-plan")
-                    checkpoint(root / state["plan_id"] / "record.json", state, read())
+                    checkpoint(root / state["plan_id"] / "record.json", state, read(protected_roots=[repo]))
             else:
                 request = {"repository": args.identity, "base": args.base, "head": args.head,
                            "artifact_sha256": args.artifact_sha256, "toolkit_source": args.source}

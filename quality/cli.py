@@ -8,7 +8,7 @@ import signal
 import subprocess
 import sys
 
-from quality_trust import Cancellation, write_output, MAX_ARTIFACT, Invalid, artifact, regular_bytes, sha
+from quality_trust import Cancellation, write_output, MAX_ARTIFACT, Invalid, artifact, regular_bytes, sha, outside_path, runtime_python, subject_root
 from quality.runner import run
 
 
@@ -37,7 +37,10 @@ def run_main(args: argparse.Namespace) -> int:
         if not sys.flags.isolated or not sys.flags.no_site or os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("isolated-posix-python-3.11-required")
         if not args.experimental_source:
-            artifact(regular_bytes(Path(sys.argv[0]), MAX_ARTIFACT), args.artifact_sha256, args.source)
+            repo = subject_root(args.repo)
+            package = outside_path(Path(sys.argv[0]), [repo], strict=True, final_symlink=False)
+            runtime_python([repo])
+            artifact(regular_bytes(package, MAX_ARTIFACT), args.artifact_sha256, args.source)
         report, path = run(args, args.artifact_sha256, args.source, args.experimental_source)
         if args.cancellation.requested and report["overall"] != "fail":
             from quality.evidence import stage, save

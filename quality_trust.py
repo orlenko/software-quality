@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from collections import deque
 import hashlib
 import io
 import json
@@ -18,8 +19,8 @@ import time
 import zipfile
 from typing import Any, Iterator
 
-VERSION = "0.1.1"
-EXTERNAL_VERSION = "0.2.1"
+VERSION = "0.1.2"
+EXTERNAL_VERSION = "0.2.2"
 POLICY = "0.1"
 PUBLISHER = "orlenko/software-quality"
 MAX_JSON = 2 * 1024 * 1024
@@ -92,15 +93,134 @@ def within(path: Path, root: Path) -> bool:
     return path.resolve().is_relative_to(root.resolve())
 
 
-def outside_path(path: Path, roots: list[Path]) -> Path:
-    """Reject paths traversing a protected ancestor, even if a later link exits it."""
-    if ".." in path.parts:
-        raise Invalid("parent-path-components-unsupported")
-    lexical = Path(os.path.abspath(path))
-    for candidate in (lexical, *lexical.parents):
-        if any(candidate.resolve().is_relative_to(root.resolve()) for root in roots):
+def raw_absolute(path: Path) -> Path:
+    """Capture caller context without erasing parents or following links."""
+    return path if path.is_absolute() else Path.cwd() / path
+
+
+def _walk_path(path: Path, roots: tuple[Path, ...], *, strict: bool,
+               final_symlink: bool) -> Path:
+    """Inspect each namespace hop; never normalize a selector before inspection."""
+    if path.anchor not in ("", "/"):
+        raise Invalid("unsupported-path-anchor")
+    parts = path.parts if path.is_absolute() else (*Path.cwd().parts, *path.parts)
+    pending = deque(parts[1:])
+    current = Path("/")
+    links = work = 0
+
+    def protected(candidate: Path) -> None:
+        if any(candidate.is_relative_to(root) for root in roots):
             raise Invalid("path-traverses-protected-root")
-    return path.resolve()
+
+    protected(current)
+    while pending:
+        work += 1
+        if work > 512:
+            raise Invalid("path-component-budget-exceeded")
+        part = pending.popleft()
+        if part == "..":
+            # current was inspected before the step that could otherwise erase it.
+            current = current.parent
+            protected(current)
+            continue
+        candidate = current / part
+        protected(candidate)
+        try:
+            info = candidate.lstat()
+        except FileNotFoundError:
+            if strict or ".." in pending:
+                raise Invalid("required-path-or-parent-unavailable") from None
+            # Creation callers may append only a new, ordinary directory tail.
+            for component in pending:
+                work += 1
+                if work > 512:
+                    raise Invalid("path-component-budget-exceeded")
+                candidate /= component
+                protected(candidate)
+            return candidate
+        except (OSError, ValueError):
+            raise Invalid("path-inspection-unavailable") from None
+        if stat.S_ISLNK(info.st_mode):
+            if not pending and not final_symlink:
+                raise Invalid("terminal-symlink-refused")
+            links += 1
+            if links > 40:
+                raise Invalid("path-symlink-budget-exceeded")
+            try:
+                destination = Path(os.readlink(candidate))
+            except (OSError, ValueError):
+                raise Invalid("path-link-unavailable") from None
+            if destination.anchor not in ("", "/"):
+                raise Invalid("unsupported-path-anchor")
+            if destination.is_absolute():
+                current = Path("/")
+                protected(current)
+                pending.extendleft(reversed(destination.parts[1:]))
+            else:
+                pending.extendleft(reversed(destination.parts))
+            continue
+        if pending and not stat.S_ISDIR(info.st_mode):
+            raise Invalid("path-ancestor-not-directory")
+        current = candidate
+    protected(current)
+    return current
+
+
+def outside_path(path: Path, roots: list[Path], *, strict: bool = False,
+                 final_symlink: bool = True) -> Path:
+    """Return a checked canonical path on a stable owner-controlled filesystem."""
+    canonical_roots = tuple(_walk_path(root, (), strict=False, final_symlink=True) for root in roots)
+    return _walk_path(path, canonical_roots, strict=strict, final_symlink=final_symlink)
+
+
+def runtime_python(roots: list[Path]) -> str:
+    path = outside_path(Path(sys.executable), roots, strict=True)
+    if not path.is_file() or not os.access(path, os.X_OK):
+        raise Invalid("approved-interpreter-unavailable")
+    return str(path)
+
+
+def subject_root(path: Path) -> Path:
+    root = outside_path(path, [], strict=True)
+    if not root.is_dir():
+        raise Invalid("subject-directory-required")
+    return root
+
+
+def selector_context(arguments: list[str], *, subjectless_install: bool = False) -> tuple[Path | None, list[str]]:
+    """Extract one unambiguous subject; leave launcher policy to its own parser."""
+    result = list(arguments)
+    found: tuple[int, str, bool] | None = None
+    index = 0
+    while index < len(result):
+        token = result[index]
+        option = token.split("=", 1)[0]
+        if token == "--" or option in ("--r", "--re", "--rep"):
+            raise Invalid("ambiguous-subject-argument")
+        if option == "--repo":
+            if found is not None:
+                raise Invalid("duplicate-subject-argument")
+            equals = "=" in token
+            if equals:
+                value = token.split("=", 1)[1]
+            else:
+                index += 1
+                if index >= len(result):
+                    raise Invalid("missing-subject-argument")
+                value = result[index]
+            if not value or value.startswith("-"):
+                raise Invalid("ambiguous-subject-argument")
+            found = (index, value, equals)
+        index += 1
+    if found is None:
+        prefix = 2 if result[:1] == ["--adapter-protocol"] else 1 if result and result[0].startswith("--adapter-protocol=") else 0
+        if subjectless_install and len(result) > prefix and result[prefix] == "install":
+            return None, result
+        raise Invalid("explicit-subject-argument-required")
+    position, spelling, equals = found
+    repo = subject_root(Path(spelling))
+    result[position] = ("--repo=" if equals else "") + str(repo)
+    return repo, result
 
 
 def artifact(data: bytes, digest: str, source: str, *, version: str = VERSION,
@@ -145,11 +265,11 @@ class Git:
     """Inspection only: fixed Git executable and no inherited Git authority."""
 
     def __init__(self, repo: Path) -> None:
-        self.repo = repo.resolve(strict=True)
+        self.repo = subject_root(repo)
         executable = shutil.which("git", path=SAFE_PATH)
         if executable is None:
             raise Invalid("git-unavailable")
-        self.executable = executable
+        self.executable = str(outside_path(Path(executable), [self.repo], strict=True))
         self.env = {"PATH": SAFE_PATH, "HOME": "/nonexistent", "LC_ALL": "C",
                     "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
                     "GIT_NO_REPLACE_OBJECTS": "1", "GIT_NO_LAZY_FETCH": "1",
@@ -294,8 +414,9 @@ class OwnedProcess:
     """
     _capability_verified = False
 
-    def __init__(self, cancellation: Cancellation) -> None:
+    def __init__(self, cancellation: Cancellation, *, protected_roots: list[Path]) -> None:
         self.cancellation = cancellation
+        self.protected_roots = list(protected_roots)
         self._process: subprocess.Popen[bytes] | None = None
         self._authority = False
         self._ended = False
@@ -326,18 +447,19 @@ class OwnedProcess:
         raise Invalid("unsupported-child-observation")
 
     @classmethod
-    def require_capability(cls, cancellation: Cancellation) -> None:
+    def require_capability(cls, cancellation: Cancellation, *, protected_roots: list[Path]) -> None:
         required = ("waitid", "P_PID", "WEXITED", "WNOHANG", "WNOWAIT", "CLD_EXITED", "CLD_KILLED", "CLD_DUMPED", "killpg")
         if (os.name != "posix" or not cancellation.active
                 or not all(hasattr(os, name) for name in required)
                 or not callable(getattr(os, "waitid", None))
                 or signal.getsignal(signal.SIGCHLD) != signal.SIG_DFL):
             raise Invalid("nonreaping-process-capability-unavailable")
+        interpreter = runtime_python(protected_roots)
         if cls._capability_verified:
             return
         # Known bounded interpreter code only; no target and no unproved signal.
-        probe = cls(cancellation)
-        probe._spawn([sys.executable, "-I", "-S", "-c", "pass"],
+        probe = cls(cancellation, protected_roots=protected_roots)
+        probe._spawn([interpreter, "-I", "-S", "-c", "pass"],
                      env={"PATH": os.defpath, "HOME": "/nonexistent", "LC_ALL": "C"},
                      stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         valid = False
@@ -377,7 +499,7 @@ class OwnedProcess:
         self._authority = True
 
     def start(self, argv: list[str], **kwargs: Any) -> None:
-        self.require_capability(self.cancellation)
+        self.require_capability(self.cancellation, protected_roots=self.protected_roots)
         if self.cancellation.requested:
             raise KeyboardInterrupt
         self._spawn(argv, **kwargs)

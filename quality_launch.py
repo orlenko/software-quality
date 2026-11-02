@@ -12,7 +12,7 @@ if not sys.flags.isolated or not sys.flags.no_site:
     raise SystemExit("invoke with a trusted Python 3.11+ interpreter and -I -S")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from quality_trust import (Cancellation, OwnedProcess, write_output, diagnostic, MAX_ARTIFACT, Git, Invalid, OID, artifact, lock_value,
-                           regular_bytes, within)
+                           regular_bytes, within, outside_path, runtime_python, raw_absolute, subject_root)
 
 
 def main() -> int:
@@ -46,9 +46,16 @@ def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
     try:
         if os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("unsupported-runtime")
-        cache = args.cache.resolve()
+        repo = subject_root(args.repo) if args.command != "install" else None
+        roots = [repo] if repo is not None else []
+        tool = outside_path(Path(__file__), roots, strict=True).parent
+        interpreter = runtime_python(roots)
+        cache = outside_path(args.cache, [*roots, tool])
+        if within(tool, cache) or (repo is not None and within(repo, cache)):
+            raise Invalid("cache-roots-must-be-separate")
         if args.command == "install":
-            data = regular_bytes(args.artifact, MAX_ARTIFACT)
+            path = outside_path(args.artifact, [], strict=True, final_symlink=False)
+            data = regular_bytes(path, MAX_ARTIFACT)
             artifact(data, args.sha256, args.source)
             cache.mkdir(parents=True, exist_ok=True, mode=0o700)
             target = cache / (args.sha256 + ".pyz")
@@ -64,27 +71,26 @@ def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
                 raise KeyboardInterrupt
             write_output(("installed " + args.sha256 + "\n").encode(), cancellation)
             return 2 if cancellation.requested else 0
-        repo = args.repo.resolve(strict=True)
-        if within(Path(__file__), repo) or within(cache, repo) or within(args.state, repo):
-            raise Invalid("trusted-paths-must-be-outside-target")
-        if within(args.state, cache) or within(cache, args.state):
-            raise Invalid("cache-and-state-must-be-separate")
+        assert repo is not None
+        state = outside_path(args.state, [repo, tool, cache])
+        if any(within(root, state) for root in (repo, tool, cache)):
+            raise Invalid("state-roots-must-be-separate")
         git = Git(repo)
         base, head = git.commit(args.base), git.commit(args.head)
         lock = lock_value(git.blob(base, ".quality/lock.json"))
-        package = cache / (lock["artifact_sha256"] + ".pyz")
+        package = outside_path(cache / (lock["artifact_sha256"] + ".pyz"), [repo], strict=True, final_symlink=False)
         artifact(regular_bytes(package, MAX_ARTIFACT), lock["artifact_sha256"], lock["source"])
-        command = [sys.executable, "-I", "-S", str(package), args.command,
+        command = [interpreter, "-I", "-S", str(package), args.command,
                    "--repo", str(repo), "--base", base, "--head", head,
-                   "--identity", args.identity, "--state", str(args.state.resolve()),
+                   "--identity", args.identity, "--state", str(state),
                    "--artifact-sha256", lock["artifact_sha256"], "--source", lock["source"]]
         if args.execute_trusted:
             command.append("--execute-trusted")
         if args.review:
-            command.extend(["--review", str(args.review.resolve())])
+            command.extend(["--review", str(raw_absolute(args.review))])
         if args.review_sha256:
             command.extend(["--review-sha256", args.review_sha256])
-        owned = OwnedProcess(cancellation)
+        owned = OwnedProcess(cancellation, protected_roots=[repo])
         try:
             owned.start(command, env={"PATH": os.defpath, "LC_ALL": "C"})
             code = owned.wait()

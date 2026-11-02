@@ -1,9 +1,9 @@
 # External gate import candidate
 
-Engine/package `0.2.1`, config/report schema `2`, launcher/adapter protocol `2`,
+Engine/package `0.2.2`, config/report schema `2`, launcher/adapter protocol `2`,
 policy `0.1` unchanged. This corrects the bounded slice in
 [decision 0004](decisions/0004-external-import-slice.md). Qualification of the new
-0.2.1 bytes is recorded in the [correction evidence](reviews/process-finalization-fix-v02.md);
+0.2.2 bytes is pending in the [path correction evidence](reviews/approved-path-fix-v01.md);
 historical invented-record evidence belongs to 0.2.0. The separate historical fixture record covers its frozen 0.2.0
 artifact; it does not qualify these new bytes. No consumer producer/controller, enforced environment, Linux run,
 consumer install/adoption, release or hosted artifact publication is established.
@@ -24,7 +24,7 @@ environment identities, consumed-input mechanism, effects, required controls,
 selected refs and ceilings. See [the schema](../quality/schemas/external-config.json)
 and [invented factories](../tests/external_support.py). They are examples of
 validator inputs, not a provisioned producer or consumer configuration. The base
-lock uses the existing six lock fields with `schema_version: 2`, `version: 0.2.1`,
+lock uses the existing six lock fields with `schema_version: 2`, `version: 0.2.2`,
 `policy_version: 0.1`, publisher `orlenko/software-quality`, and separately approved
 full source/artifact identities. Head-side policy, lock and launcher are data.
 
@@ -52,13 +52,15 @@ this importer.
 Place the trusted bootstrap pair outside the target and keep cache, private state
 and input files outside the target. State must also be separate from cache/toolkit;
 inputs must be outside all those roots, including lexical paths and resolved
-aliases. Parent (`..`) components are refused by this bounded interface. Paths below are invented placeholders. Replace identities only with
+aliases. Parent steps are inspected without erasing earlier hops. Paths starting in or
+traversing a protected root refuse even if they later exit it; safe outside aliases
+and parent steps remain usable. Existing final-symlink restrictions still apply. Paths below are invented placeholders. Replace identities only with
 independently approved values. Neither shell variables nor placeholder values
 supply trust.
 
 ```sh
 python3 -I -S /approved/toolkit/quality_external_launch.py --adapter-protocol 2 install \
-  --artifact /approved/artifacts/software-quality-external-0.2.1.pyz \
+  --artifact /approved/artifacts/software-quality-external-0.2.2.pyz \
   --source FULL_TOOLKIT_COMMIT --sha256 APPROVED_ARTIFACT_SHA256 \
   --cache /owner/quality-cache
 
@@ -181,6 +183,7 @@ checks cover parameterized pins, strict parsing and extracted evidence helpers.
 No unaffected old artifact suite is rerun merely to inflate counts.
 
 The [original qualification record](reviews/external-import-v02.md) records historical
-0.2.0 identities, results and independent review. It does not qualify 0.2.1. The new
-source/tree/package identities and qualification are recorded separately in the
-[correction evidence](reviews/process-finalization-fix-v02.md).
+0.2.0 identities, results and independent review. It does not qualify 0.2.1. The ownership/finalization
+[correction evidence](reviews/process-finalization-fix-v02.md) remains historical.
+New path-correction identities and qualification are recorded separately in the
+[path correction evidence](reviews/approved-path-fix-v01.md).

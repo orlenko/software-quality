@@ -35,7 +35,7 @@ class IdentityTests(unittest.TestCase):
         stack.enter_context(patch("quality_trust.subprocess.Popen", return_value=process))
         stack.enter_context(patch("quality_trust.os.waitid", side_effect=waitid))
         stack.enter_context(patch("quality_trust.os.killpg", side_effect=killpg))
-        owned = OwnedProcess(cancel)
+        owned = OwnedProcess(cancel, protected_roots=[])
         owned.start(["invented-never-executed"])
         return stack, owned, process
 
@@ -119,10 +119,10 @@ class IdentityTests(unittest.TestCase):
         with cancel.handlers(), patch("quality_trust.subprocess.Popen") as popen:
             with patch("quality_trust.os.waitid", None):
                 with self.assertRaises(Invalid):
-                    OwnedProcess(cancel).start(["never-executed"])
+                    OwnedProcess(cancel, protected_roots=[]).start(["never-executed"])
             with patch("quality_trust.signal.getsignal", return_value=signal.SIG_IGN):
                 with self.assertRaises(Invalid):
-                    OwnedProcess(cancel).start(["never-executed"])
+                    OwnedProcess(cancel, protected_roots=[]).start(["never-executed"])
             popen.assert_not_called()
 
     def test_failed_probe_never_starts_target_or_signals(self) -> None:
@@ -133,7 +133,7 @@ class IdentityTests(unittest.TestCase):
              patch("quality_trust.os.waitid", side_effect=OSError(errno.EINVAL, "fake unsupported")), \
              patch("quality_trust.os.waitpid", return_value=(FAKE_PID, 0)), patch("quality_trust.os.killpg") as kill:
             with self.assertRaises(Invalid):
-                OwnedProcess(cancel).start(["target-never-executed"])
+                OwnedProcess(cancel, protected_roots=[]).start(["target-never-executed"])
             self.assertEqual(popen.call_count, 1)
             self.assertEqual(popen.call_args.args[0][-2:], ["-c", "pass"])
             kill.assert_not_called()
@@ -151,7 +151,7 @@ class OwnedChildrenTests(unittest.TestCase):
         for code in (0, 7):
             with self.subTest(code=code):
                 cancel = Cancellation()
-                owned = OwnedProcess(cancel)
+                owned = OwnedProcess(cancel, protected_roots=[])
                 with cancel.handlers():
                     try:
                         owned.start([sys.executable, "-I", "-S", "-c", "raise SystemExit("+str(code)+")"],
@@ -168,7 +168,7 @@ class OwnedChildrenTests(unittest.TestCase):
             marker = Path(directory) / "child"
             code = "import subprocess,sys;from pathlib import Path;p=subprocess.Popen([sys.executable,'-I','-S','-c','import time;time.sleep(2)']);Path(sys.argv[1]).write_text(str(p.pid))"
             cancel = Cancellation()
-            owned = OwnedProcess(cancel)
+            owned = OwnedProcess(cancel, protected_roots=[])
             with cancel.handlers():
                 try:
                     owned.start([sys.executable, "-I", "-S", "-c", code, str(marker)], env={"PATH": os.defpath, "HOME": directory, "LC_ALL": "C"},
@@ -205,7 +205,7 @@ class CallerBoundaryTests(unittest.TestCase):
                     if sig == 0: raise ProcessLookupError
                 with patch.object(OwnedProcess,"_capability_verified",True), patch("quality_trust.subprocess.Popen",return_value=process), \
                      patch("quality_trust.os.waitid",side_effect=lambda *args:exited(7)), patch("quality_trust.os.killpg",side_effect=killpg):
-                    call=lambda:execute({"argv":["never-executed"],"timeout_seconds":1,"max_log_bytes":100},Path(directory),Path(directory)/"state",Path(directory)/"log")
+                    call=lambda:execute({"argv":["never-executed"],"timeout_seconds":1,"max_log_bytes":100},Path(directory),Path(directory)/"state",Path(directory)/"log",subject=Path(directory))
                     if isinstance(error,KeyboardInterrupt):
                         with self.assertRaises(CommandInterrupted) as observed: call()
                         self.assertEqual(observed.exception.code,7)

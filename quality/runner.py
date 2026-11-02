@@ -7,7 +7,7 @@ from typing import Any
 import uuid
 
 from quality_trust import (write_output, Cancellation, MAX_JSON, Git, Invalid, POLICY, canonical, lock_value,
-                           parse_json, regular_bytes, sha, snapshot_stable, within)
+                           parse_json, regular_bytes, sha, snapshot_stable, within, outside_path, runtime_python, subject_root)
 from quality.process import CommandInterrupted, execute
 from quality.schema import checked
 from quality.evidence import now, stage, verdict, save, target_lock
@@ -24,9 +24,7 @@ def review_stages(args: Any, config: dict[str, Any], context: dict[str, Any],
     if args.review is None or args.review_sha256 is None:
         return missing("review-response-and-approved-digest-required")
     try:
-        path = args.review
-        if within(path, repo) or within(path, tool_root):
-            raise Invalid("review-must-be-outside-target-and-tool")
+        path = outside_path(args.review, [repo, tool_root], strict=True, final_symlink=False)
         data = regular_bytes(path, MAX_JSON)
         if sha(data) != args.review_sha256:
             raise Invalid("review-digest-mismatch")
@@ -75,10 +73,11 @@ def review_stages(args: Any, config: dict[str, Any], context: dict[str, Any],
 
 
 def run(args: Any, artifact_sha: str, source: str, experimental: bool) -> tuple[dict[str, Any], Path]:
-    repo = args.repo.resolve(strict=True)
-    state = args.state.resolve()
-    tool = Path(sys.argv[0]).resolve()
+    repo = subject_root(args.repo)
+    tool = outside_path(Path(sys.argv[0]), [repo], strict=True)
     tool_root = Path(__file__).resolve().parents[1] if experimental else tool.parent
+    state = outside_path(args.state, [repo, tool_root])
+    runtime_python([repo])
     if (within(state, repo) or within(state, tool_root) or within(repo, state)
             or within(repo, tool_root)):
         raise Invalid("target-tool-state-paths-must-be-separate")
@@ -152,7 +151,7 @@ def run(args: Any, artifact_sha: str, source: str, experimental: bool) -> tuple[
                         expected = git.export(head, snapshot)
                         if not snapshot_stable(snapshot, expected):
                             raise Invalid("snapshot-changed-before-check")
-                        status, outcome, code, output_status, output_reason = execute(check, snapshot, directory / ("state-" + check["id"]), directory / log_name, getattr(args, "cancellation", None))
+                        status, outcome, code, output_status, output_reason = execute(check, snapshot, directory / ("state-" + check["id"]), directory / log_name, getattr(args, "cancellation", None), subject=repo)
                         report["stages"][index] = stage("check:" + check["id"], status, outcome, code, log_name)
                         stable = snapshot_stable(snapshot, expected)
                         report["stages"][index + 1] = stage("snapshot:" + check["id"], "pass" if stable else "incomplete",

@@ -484,7 +484,7 @@ class ExternalTests(ExternalCase):
         plan = self.fx.plan()
         before = self.fx.clock(plan, 100)
         issued = self.fx.clock(plan, 1000)
-        state = create(self.fx.state, plan["context"], plan["registry"], before, issuance_clock=lambda: issued)
+        state = create(self.fx.state, plan["context"], plan["registry"], before, issuance_clock=lambda: issued, protected_roots=[self.fx.repo])
         envelope, _ = self.fx.facts(state, 7)
         record = envelope["records"][0]
         record["timing"].update(started_ms=before.wall_ms + 10, finished_ms=issued.wall_ms + 10,
@@ -805,3 +805,159 @@ with patch('quality.external_cli.emit',side_effect=OSError('invented output erro
             self.assertEqual(result.stdout,"")
             _,stored=load(self.fx.state,plan["plan_id"])
             self.assertEqual(stored["report"]["overall"],"fail" if code else "incomplete")
+
+
+class ApprovedPathTests(ExternalCase):
+    def test_hidden_receipt_and_observer_hops_do_not_consume_facts(self):
+        a,b=self.fx.root/"outside-a",self.fx.root/"outside-b"
+        for directory in (a,b):(directory/"subdir").mkdir(parents=True)
+        hop=self.fx.repo/"traversal";hop.symlink_to(a/"subdir",target_is_directory=True)
+        alias=self.fx.root/"outside-alias";alias.symlink_to(hop,target_is_directory=True)
+        for role in ("--evidence","--observations"):
+            for parent in (False,True):
+                literal=alias/".."/"input.json" if parent else alias/"input.json"
+                for destination in (a,b):
+                    with self.subTest(role=role,parent=parent,destination=destination.name):
+                        hop.unlink();hop.symlink_to(destination/"subdir",target_is_directory=True)
+                        self.fx.head=self.fx.commit()
+                        plan=self.fx.plan()
+                        envelope,observer=self.fx.facts(plan,7 if role=="--evidence" else 0)
+                        arguments=self.fx.inputs(envelope,None if role=="--evidence" else observer)
+                        index=arguments.index(role)+1
+                        selected=destination/"input.json" if parent else destination/"subdir/input.json"
+                        selected.write_bytes(Path(arguments[index]).read_bytes())
+                        arguments[index]=str(literal)
+                        result,output=self.fx.run("import","--plan",plan["plan_id"],*arguments)
+                        report=self.assert_result(result,output,"incomplete")
+                        reasons=",".join(row["reason"] for row in report["stages"])
+                        self.assertNotIn("current-subject-mismatch",reasons)
+                        self.assertNotIn("source-moved",reasons)
+                        self.assertIn("producer-input-unavailable-or-invalid" if role=="--evidence" else "controller-input-unavailable-or-invalid",reasons)
+                        _,stored=load(self.fx.state,plan["plan_id"])
+                        self.assertFalse(stored["failure"])
+                        self.assertEqual(bool(stored["original"]),role=="--observations")
+                        self.assertFalse(stored["observer"])
+
+    def test_hidden_state_hop_refuses_before_plan_write(self):
+        a,b=self.fx.root/"outside-a",self.fx.root/"outside-b"
+        for directory in (a,b):(directory/"subdir").mkdir(parents=True)
+        hop=self.fx.repo/"traversal";hop.symlink_to(a/"subdir",target_is_directory=True)
+        alias=self.fx.root/"outside-alias";alias.symlink_to(hop,target_is_directory=True)
+        for parent in (False,True):
+            literal=alias/".."/"state" if parent else alias/"state"
+            for destination in (a,b):
+                hop.unlink();hop.symlink_to(destination/"subdir",target_is_directory=True)
+                self.fx.head=self.fx.commit()
+                result,output=self.fx.run("doctor","--state",str(literal))
+                self.assertEqual(result.returncode,2,result.stderr)
+                self.assertIsNone(output)
+                self.assertFalse((destination/"state").exists())
+                self.assertFalse((destination/"subdir/state").exists())
+
+    def test_default_issuance_and_final_clock_keep_original_subject_roots(self):
+        plan=self.fx.plan();clock=self.fx.clock(plan)
+        observed=[]
+        def checked_clock(*,protected_roots):
+            observed.append(protected_roots)
+            return clock
+        with patch("quality.external_store.read_clock",side_effect=checked_clock):
+            create(self.fx.state,plan["context"],plan["registry"],clock,protected_roots=[self.fx.repo])
+            receive(self.fx.state,plan["plan_id"],Git(self.fx.repo),plan["context"],plan["registry"],clock,
+                    [self.fx.repo,self.fx.cache,self.fx.state])
+        self.assertEqual(observed,[[self.fx.repo],[self.fx.repo]])
+        before=set(self.fx.state.iterdir())
+        with self.assertRaises(Invalid):
+            create(self.fx.state,plan["context"],plan["registry"],clock,protected_roots=[])
+        self.assertEqual(set(self.fx.state.iterdir()),before)
+
+    def test_hidden_receipt_refusal_retains_previously_validated_failure(self):
+        directory=self.fx.root/"outside";(directory/"subdir").mkdir(parents=True)
+        hop=self.fx.repo/"traversal";hop.symlink_to(directory/"subdir",target_is_directory=True)
+        self.fx.head=self.fx.commit()
+        alias=self.fx.root/"outside-alias";alias.symlink_to(hop,target_is_directory=True)
+        plan=self.fx.plan();envelope,_=self.fx.facts(plan,7)
+        result,output=self.fx.receive(plan,envelope,None)
+        self.assert_result(result,output,"fail")
+        _,before=load(self.fx.state,plan["plan_id"])
+        for parent in (False,True):
+            arguments=self.fx.inputs(envelope,None)
+            target=directory/"receipt.json" if parent else directory/"subdir/receipt.json"
+            target.write_bytes(Path(arguments[1]).read_bytes())
+            arguments[1]=str(alias/".."/"receipt.json" if parent else alias/"receipt.json")
+            result,output=self.fx.run("import","--plan",plan["plan_id"],*arguments)
+            report=self.assert_result(result,output,"fail")
+            self.assertTrue(any("producer-input-unavailable-or-invalid" in row["reason"] for row in report["stages"]))
+            _,after=load(self.fx.state,plan["plan_id"])
+            self.assertEqual(after["failure"],before["failure"])
+            self.assertEqual(after["original"],before["original"])
+
+    def test_archive_and_receipt_terminal_links_remain_refused(self):
+        archive=self.fx.root/"archive-alias.pyz";archive.symlink_to(self.package)
+        cache=self.fx.root/"new-cache"
+        result=self.fx.command("install","--artifact",str(archive),"--sha256",self.digest,"--source",self.source,"--cache",str(cache))
+        self.assertEqual(result.returncode,2,result.stderr)
+        self.assertFalse(cache.exists())
+        plan=self.fx.plan();envelope,_=self.fx.facts(plan,7)
+        arguments=self.fx.inputs(envelope,None)
+        link=self.fx.root/"receipt-alias.json";link.symlink_to(Path(arguments[1]));arguments[1]=str(link)
+        result,output=self.fx.run("import","--plan",plan["plan_id"],*arguments)
+        self.assert_result(result,output,"incomplete")
+        _,stored=load(self.fx.state,plan["plan_id"])
+        self.assertFalse(stored["original"])
+        self.assertFalse(stored["failure"])
+
+    def test_actual_archive_clock_defaults_refuse_hidden_helper_at_each_phase(self):
+        import shlex
+        outside=self.fx.root/"outside";(outside/"subdir").mkdir(parents=True)
+        marker=self.fx.root/"clock-marker"
+        body=outside/"subdir/helper.py";body.write_text("from pathlib import Path\nPath("+repr(str(marker))+").touch()\nraise SystemExit(9)\n")
+        helper=outside/"subdir/helper";helper.write_text("#!/bin/sh\nexec "+shlex.quote(str(Path(sys.executable).resolve()))+" -I -S "+shlex.quote(str(body))+" \"$@\"\n");helper.chmod(0o700)
+        hop=self.fx.repo/"traversal";hop.symlink_to(outside/"subdir",target_is_directory=True)
+        self.fx.head=self.fx.commit()
+        alias=self.fx.root/"outside-alias";alias.symlink_to(hop,target_is_directory=True)
+        unsafe=alias/"helper"
+        for phase in ("initial","issuance","final"):
+            with self.subTest(phase=phase):
+                extra=[]
+                if phase=="final":
+                    plan=self.fx.plan();envelope,_=self.fx.facts(plan,7)
+                    result,output=self.fx.receive(plan,envelope,None)
+                    self.assert_result(result,output,"fail")
+                    extra=["--plan",plan["plan_id"],*self.fx.inputs(envelope,None)]
+                package=self.fx.cache/(self.digest+".pyz")
+                command="import" if phase=="final" else "doctor"
+                argv=[str(package),command,"--repo",str(self.fx.repo),"--base",self.fx.base,"--head",self.fx.head,
+                      "--identity","example/invented","--state",str(self.fx.state),"--artifact-sha256",self.digest,
+                      "--source",self.source,"--trusted-head",self.fx.head,*extra]
+                driver=self.fx.root/("clock-"+phase+".py")
+                driver.write_text("""import sys
+from pathlib import Path
+from unittest.mock import patch
+package,unsafe,phase=sys.argv[1:4]
+sys.path.insert(0,package)
+from quality.external_cli import main
+import quality.external_clock as clock
+sys.argv=[package,*sys.argv[4:]]
+calls=0
+selected_unsafe=False
+def selected(value):
+    global calls,selected_unsafe
+    if value=='/usr/sbin/sysctl':
+        calls+=1
+        if calls==(1 if phase=='initial' else 2):
+            selected_unsafe=True
+            return Path(unsafe)
+    return Path(value)
+with patch.object(clock.sys,'platform','darwin'),patch.object(clock,'Path',side_effect=selected):
+    try: code=main()
+    except SystemExit as exc: code=exc.code
+    assert selected_unsafe,'unsafe clock selector injection was not reached'
+    raise SystemExit(code)
+""")
+                result=subprocess.run([sys.executable,"-I","-S",str(driver),str(package),str(unsafe),phase,*argv[1:]],capture_output=True,text=True,timeout=20)
+                self.assertEqual(result.returncode,1 if phase=="final" else 2,result.stderr)
+                self.assertFalse(marker.exists(),"unsafe clock helper executed")
+                if phase=="final":
+                    output=parse_json(result.stdout.encode())
+                    self.assertEqual(output["report"]["overall"],"fail")
+                    self.assertTrue(any("final-clock-unavailable" in row["reason"] for row in output["report"]["stages"]))

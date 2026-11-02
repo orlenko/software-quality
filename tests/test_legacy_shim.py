@@ -54,11 +54,13 @@ class LegacyShimTests(unittest.TestCase):
 from unittest.mock import patch
 module=runpy.run_path(sys.argv[1],run_name='owned_shim_test')
 sys.argv=sys.argv[1:]
-with patch('pathlib.Path.cwd',side_effect=KeyboardInterrupt):
-    raise SystemExit(module['main']())
+with patch('pathlib.Path.cwd',side_effect=KeyboardInterrupt) as interrupted:
+    code=module['main']()
+    interrupted.assert_called()
+    raise SystemExit(code)
 """)
         result=subprocess.run([sys.executable,"-I","-S",str(driver),str(self.shim),"--launcher",str(ROOT/"quality_launch.py"),
-                               "--python",sys.executable,"doctor"],capture_output=True,text=True,timeout=10)
+                               "--python",sys.executable,"doctor","--repo",str(self.fx.repo)],capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,2,result.stderr)
         self.assertNotIn("Traceback",result.stderr)
         self.assertFalse(self.fx.state.exists())

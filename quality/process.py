@@ -9,7 +9,7 @@ import sys
 import time
 from typing import Any
 
-from quality_trust import Cancellation, Invalid, OwnedProcess
+from quality_trust import Cancellation, Invalid, OwnedProcess, runtime_python
 
 
 class CommandInterrupted(KeyboardInterrupt):
@@ -27,15 +27,15 @@ def stop(process: OwnedProcess) -> bool:
 
 
 def execute(check: dict[str, Any], snapshot: Path, state: Path, log: Path,
-            cancellation: Cancellation | None = None) -> tuple[str, str, int, str, str]:
+            cancellation: Cancellation | None = None, *, subject: Path) -> tuple[str, str, int, str, str]:
     cancellation = cancellation or Cancellation()
     with cancellation.handlers():
-        return _execute(check, snapshot, state, log, cancellation)
+        return _execute(check, snapshot, state, log, cancellation, subject)
 
 
 def _execute(check: dict[str, Any], snapshot: Path, state: Path, log: Path,
-             cancellation: Cancellation) -> tuple[str, str, int, str, str]:
-    process = OwnedProcess(cancellation)
+             cancellation: Cancellation, subject: Path) -> tuple[str, str, int, str, str]:
+    process = OwnedProcess(cancellation, protected_roots=[subject, snapshot])
     try:
         return _execute_body(check, snapshot, state, log, cancellation, process)
     except KeyboardInterrupt:
@@ -55,7 +55,7 @@ def _execute_body(check: dict[str, Any], snapshot: Path, state: Path, log: Path,
     state.mkdir(mode=0o700)
     for name in ("home", "tmp", "cache", "config", "data"):
         (state / name).mkdir(mode=0o700)
-    env = {"PATH": str(Path(sys.executable).parent) + ":" + os.defpath,
+    env = {"PATH": str(Path(runtime_python(process.protected_roots)).parent) + ":" + os.defpath,
            "HOME": str(state / "home"), "TMPDIR": str(state / "tmp"),
            "TMP": str(state / "tmp"), "TEMP": str(state / "tmp"),
            "XDG_CACHE_HOME": str(state / "cache"), "XDG_CONFIG_HOME": str(state / "config"),

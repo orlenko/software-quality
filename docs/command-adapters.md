@@ -1,9 +1,9 @@
 # Command/context candidate
 
-The adapter is version `0.1.1`, protocol `1`; its
-[compatibility record](../adapters/compatibility.json) identifies the separately qualified runtime source and digest.
-[The correction record](reviews/process-finalization-fix-v02.md) identifies the
-actual local bundle, checks and limitations. This is a software-quality source/skill bundle,
+The adapter is version `0.1.2`, protocol `1`; its
+[compatibility record](../adapters/compatibility.json) will identify the separately qualified runtime source and digest after new qualification.
+[The path correction record](reviews/approved-path-fix-v01.md) records the new
+qualification; the earlier ownership correction stays historical. This is a software-quality source/skill bundle,
 not an installed plugin, registered command or adopted consumer workflow.
 
 The [Codex template](../adapters/skills/cmd-quality/SKILL.md) uses `$cmd-quality`;
@@ -28,9 +28,9 @@ From a clean reviewed adapter-source checkout:
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1-relay-fixed.zip
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.2.zip
 python3 -I -S tools/test.py \
-  --artifact dist/software-quality-0.1.1.pyz --adapter-bundle dist/quality-adapters-0.1.1-relay-fixed.zip
+  --artifact dist/software-quality-0.1.2.pyz --adapter-bundle dist/quality-adapters-0.1.2.zip
 ```
 
 The runtime and adapter source identities are separate. Build the runtime from a
@@ -49,9 +49,11 @@ Copying only a skill directory breaks its shared resources. Local unqualified na
 are documented host forms, not a tested install recipe for this bundle.
 
 The first local 0.1.1 bundle is also held: aggregate review found its advertised
-simple shim still bypassed owned cancellation. The separately identified corrected
-bundle above includes that fix and direct shim checks. Use its exact S3 source and
-digest from the correction record; neither older file is silently replaced.
+simple shim still bypassed owned cancellation. Historical
+`quality-adapters-0.1.1-relay-fixed.zip`, from source S3 in the ownership correction
+record, fixed that relay. Those exact S3 bytes remain frozen but are also held after
+the later path-selection finding. The new 0.1.2 candidate requires its own source/digest and qualification;
+no older file is silently replaced.
 
 ## Explicit mode works offline
 
@@ -136,3 +138,12 @@ domain/integration obligations remain separate where unsupported; partial/cached
 tests do not stand for their full gates. No consumer execution/install, live-review
 upload, release publication, comments, fixes, merges, restart or deployment is
 authorized by this package. Consumer rollout remains separately scoped.
+
+Approved paths retain their caller spelling until the shared traversal check.
+Every symlink hop is checked before selecting canonical Python/launcher/client/auth
+objects. Safe outside aliases and caller-relative inputs remain supported, including
+safe parent steps; a relative selector starting within the subject is refused even
+when it would later exit. The simple shim requires one exact `--repo VALUE` or
+`--repo=VALUE`; duplicate/abbreviated repo forms and `--` ambiguity refuse before
+selecting a tool. Other launcher policy stays in the pinned runner. Existing final-
+symlink restrictions and bounded stable-filesystem limits are explicit in decision 0007.

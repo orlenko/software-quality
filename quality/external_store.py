@@ -129,10 +129,7 @@ def overlaps(a: Path, b: Path) -> bool:
 
 
 def outside(path: Path, roots: list[Path]) -> Path:
-    resolved = outside_path(path, roots)
-    if path.is_symlink():
-        raise Invalid("symlink-input-refused")
-    return resolved
+    return outside_path(path, roots, final_symlink=False)
 
 
 def state_root(path: Path, roots: list[Path]) -> Path:
@@ -159,7 +156,10 @@ def checkpoint(path: Path, state: dict[str, Any], clock: Reading) -> None:
     save(path, state, "external-state")
 
 
-def create(root: Path, context: dict[str, Any], config: dict[str, Any], clock: Reading, issuance_clock: Callable[[], Reading] = read_clock) -> dict[str, Any]:
+def create(root: Path, context: dict[str, Any], config: dict[str, Any], clock: Reading,
+           issuance_clock: Callable[[], Reading] | None = None, *, protected_roots: list[Path]) -> dict[str, Any]:
+    if not protected_roots:
+        raise Invalid("subject-protection-required")
     # The initial clock identifies inspection boot; issuance follows durability.
     identifier = uuid.uuid4().hex
     directory = root / identifier
@@ -175,7 +175,7 @@ def create(root: Path, context: dict[str, Any], config: dict[str, Any], clock: R
     # sampled only after that write, so a pre-durability invocation cannot bind.
     path = directory / "record.json"
     checkpoint(path, state, clock)
-    issued = issuance_clock()
+    issued = issuance_clock() if issuance_clock is not None else read_clock(protected_roots=protected_roots)
     if issued.boot_sha256 != clock.boot_sha256:
         raise Invalid("boot-changed-before-issuance")
     state["issued_wall_ms"], state["issued_mono_ms"] = issued.wall_ms, issued.mono_ms
@@ -279,7 +279,7 @@ def receive(root: Path, identifier: str, git: Git, context: dict[str, Any] | Non
             evidence: Path | None = None, evidence_sha256: str | None = None, producer: str | None = None,
             observations: Path | None = None, observations_sha256: str | None = None, observer: str | None = None,
             context_error: str | None = None, outcome: ImportOutcome | None = None,
-            request: dict[str, Any] | None = None, cancellation: Cancellation | None = None, final_clock: Callable[[], Reading] = read_clock) -> dict[str, Any]:
+            request: dict[str, Any] | None = None, cancellation: Cancellation | None = None, final_clock: Callable[[], Reading] | None = None) -> dict[str, Any]:
     # Plan lock also serializes the same route used from two physical clones.
     with target_lock(root, root / identifier):
         path, state = load(root, identifier)
@@ -291,7 +291,8 @@ def receive(root: Path, identifier: str, git: Git, context: dict[str, Any] | Non
             return receive_bound(path, state, git, context, config, clock, roots, outcome,
                 evidence=evidence, evidence_sha256=evidence_sha256, producer=producer,
                 observations=observations, observations_sha256=observations_sha256, observer=observer,
-                context_error=context_error, cancellation=cancellation, final_clock=final_clock)
+                context_error=context_error, cancellation=cancellation,
+                final_clock=final_clock if final_clock is not None else lambda: read_clock(protected_roots=[git.repo]))
         except KeyboardInterrupt:
             recovered = outcome.recover("import-interrupted")
         except (ImportStorageFailure, Invalid, OSError, ValueError, subprocess.SubprocessError):

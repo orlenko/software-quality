@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time
 
-from quality_trust import Invalid, regular_bytes, sha
+from quality_trust import Invalid, regular_bytes, sha, outside_path
 
 MODEL = "same-host-boot-ms-v1"
 PRECISION_MS = 1
@@ -22,11 +22,13 @@ class Reading:
     boot_sha256: str
 
 
-def read() -> Reading:
+def read(*, protected_roots: list[Path]) -> Reading:
     if sys.platform == "linux":
-        boot = regular_bytes(Path("/proc/sys/kernel/random/boot_id"), 256)
+        path = outside_path(Path("/proc/sys/kernel/random/boot_id"), protected_roots, strict=True, final_symlink=False)
+        boot = regular_bytes(path, 256)
     elif sys.platform == "darwin":
-        result = subprocess.run(["/usr/sbin/sysctl", "-n", "kern.boottime"],
+        executable = outside_path(Path("/usr/sbin/sysctl"), protected_roots, strict=True)
+        result = subprocess.run([str(executable), "-n", "kern.boottime"],
             stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             env={"PATH": os.defpath, "LC_ALL": "C"}, timeout=2, check=False)
         if result.returncode or not result.stdout or len(result.stdout) > 256:

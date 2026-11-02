@@ -27,7 +27,7 @@ else:
     print("incomplete adapter resource closure", file=sys.stderr)
     raise SystemExit(2)
 sys.path.insert(0, str(RESOURCE_ROOT))
-from quality_trust import Cancellation, OwnedProcess, write_output, Git, Invalid, MAX_JSON, OID, SAFE_PATH, canonical, parse_json, within
+from quality_trust import Cancellation, OwnedProcess, write_output, Git, Invalid, MAX_JSON, OID, SAFE_PATH, canonical, parse_json, within, outside_path, raw_absolute, subject_root
 from quality.process import stop
 
 IDENTITY = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9][A-Za-z0-9_.-]{0,99}\Z")
@@ -62,13 +62,12 @@ class PullRequest:
 
 
 def outside_target(value: Path, repo: Path) -> Path:
-    lexical = Path(os.path.abspath(value))
-    resolved = value.resolve(strict=True)
-    # Resolve ancestor aliases as well as the final object: /var vs /private/var
-    # and a target-side symlink must not disguise a head-selected bootstrap path.
-    if within(resolved, repo) or any(within(parent, repo) for parent in lexical.parents):
-        raise Invalid("approved-path-must-be-outside-target")
-    return resolved
+    try:
+        return outside_path(value, [repo], strict=True)
+    except Invalid as exc:
+        if str(exc) == "path-traverses-protected-root":
+            raise Invalid("approved-path-must-be-outside-target") from None
+        raise
 
 
 def approved_path(value: Path, repo: Path, *, directory: bool = False) -> Path:
@@ -93,7 +92,7 @@ def metadata(args: Any, route: str, fields: list[str] | None = None) -> Any:
            "GH_NO_UPDATE_NOTIFIER": "1", "GH_NO_EXTENSION_UPDATE_NOTIFIER": "1",
            "GH_TELEMETRY": "false", "DO_NOT_TRACK": "1"}
     # Bound bytes during execution, retain no raw files, and own the helper group.
-    process = OwnedProcess(args.cancellation)
+    process = OwnedProcess(args.cancellation, protected_roots=[args.repo])
     stopped = False
     cleaned = False
     def cleanup() -> bool:
@@ -165,8 +164,9 @@ def core_arguments(args: Any, head: str) -> list[str]:
     return command
 
 
-def launch(command: list[str], cancellation: Cancellation, *, cwd: Path | None = None) -> tuple[int, bool]:
-    owned = OwnedProcess(cancellation)
+def launch(command: list[str], cancellation: Cancellation, *, protected_roots: list[Path],
+           cwd: Path | None = None) -> tuple[int, bool]:
+    owned = OwnedProcess(cancellation, protected_roots=protected_roots)
     try:
         owned.start(command, cwd=cwd if cwd is not None else HERE, env={"PATH": SAFE_PATH, "LC_ALL": "C"})
         code = owned.wait()
@@ -214,21 +214,25 @@ def main() -> int:
 
 
 def frontend_main(args: argparse.Namespace) -> int:
-    receipt: dict[str, Any] = {"adapter_protocol": 1, "adapter_version": "0.1.1", "target": None,
+    receipt: dict[str, Any] = {"adapter_protocol": 1, "adapter_version": "0.1.2", "target": None,
         "core_exit": None, "context_status": "incomplete", "pr_freshness": "unverified", "reason": "not-started"}
     try:
         if not args.personal or not IDENTITY.fullmatch(args.identity):
             raise Invalid("explicit-personal-eligibility-and-identity-required")
-        args.repo = args.repo.resolve(strict=True)
-        if within(Path(__file__), args.repo):
-            raise Invalid("adapter-must-be-outside-target")
+        args.repo = subject_root(args.repo)
+        outside_path(Path(__file__), [args.repo], strict=True)
         args.python = approved_path(args.python, args.repo)
         # Launcher is a Python source file, not necessarily executable.
         launcher = outside_target(args.launcher, args.repo)
         if not launcher.is_file():
             raise Invalid("launcher-must-be-approved-outside-target")
         args.launcher = launcher
-        args.cache, args.state = args.cache.resolve(), args.state.resolve()
+        tool_roots = [RESOURCE_ROOT, args.launcher.parent]
+        args.cache = outside_path(args.cache, [args.repo, *tool_roots])
+        args.state = outside_path(args.state, [args.repo, *tool_roots, args.cache])
+        if args.review is not None:
+            # The authoritative reader validates data after retaining check facts.
+            args.review = raw_absolute(args.review)
         git = Git(args.repo)
         args.base = git.commit(args.base)
         config = parse_json(git.blob(args.base, ".quality/config.json"))
@@ -279,7 +283,7 @@ def frontend_main(args: argparse.Namespace) -> int:
         receipt["target"] = {"repository": args.identity, "base": args.base, "head": head,
                              "pr": asdict(selected) if selected else None,
                              "local_ref": branch[0] if branch else None, "local_head": branch[1] if branch else None}
-        code, interrupted = launch(core_arguments(args, head), args.cancellation)
+        code, interrupted = launch(core_arguments(args, head), args.cancellation, protected_roots=[args.repo])
         receipt["core_exit"] = code
         if interrupted:
             raise Invalid("frontend-interrupted")

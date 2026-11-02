@@ -12,7 +12,7 @@ if not sys.flags.isolated or not sys.flags.no_site:
     raise SystemExit("use python3 -I -S quality_external_launch.py")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from quality_trust import Cancellation, OwnedProcess, write_output, diagnostic, EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, lock_value, regular_bytes, within, outside_path
+from quality_trust import Cancellation, OwnedProcess, write_output, diagnostic, EXTERNAL_VERSION, MAX_ARTIFACT, Git, Invalid, artifact, lock_value, regular_bytes, within, outside_path, runtime_python, raw_absolute, subject_root
 
 
 def verify(data: bytes, digest: str, source: str) -> None:
@@ -51,11 +51,16 @@ def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
     try:
         if not sys.flags.isolated or not sys.flags.no_site or os.name != "posix" or sys.version_info < (3, 11):
             raise Invalid("unsupported-runtime")
-        cache = args.cache.resolve()
-        if args.cache.is_symlink():
-            raise Invalid("symlink-cache-refused")
+        repo = subject_root(args.repo) if args.command != "install" else None
+        roots = [repo] if repo is not None else []
+        tool = outside_path(Path(__file__), roots, strict=True).parent
+        interpreter = runtime_python(roots)
+        cache = outside_path(args.cache, [*roots, tool], final_symlink=False)
+        if within(tool, cache) or (repo is not None and within(repo, cache)):
+            raise Invalid("cache-roots-must-be-separate")
         if args.command == "install":
-            data = regular_bytes(args.artifact, MAX_ARTIFACT)
+            path = outside_path(args.artifact, [], strict=True, final_symlink=False)
+            data = regular_bytes(path, MAX_ARTIFACT)
             verify(data, args.sha256, args.source)
             cache.mkdir(parents=True, exist_ok=True, mode=0o700)
             target = cache / (args.sha256 + ".pyz")
@@ -71,12 +76,8 @@ def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
                 raise KeyboardInterrupt
             write_output(("installed " + args.sha256 + "\n").encode(), cancellation)
             return 2 if cancellation.requested else 0
-        repo = args.repo.resolve(strict=True)
-        tool = Path(__file__).resolve().parent
-        outside_path(Path(__file__), [repo])
-        outside_path(args.cache, [repo])
-        outside_path(args.state, [repo, tool, cache])
-        state = args.state.resolve()
+        assert repo is not None
+        state = outside_path(args.state, [repo, tool, cache], final_symlink=False)
         if any(within(path, repo) for path in (tool, cache, state)):
             raise Invalid("trusted-roots-must-be-outside-target")
         if within(state, cache) or within(cache, state) or within(state, tool) or within(tool, state):
@@ -84,18 +85,20 @@ def launch_main(args: argparse.Namespace, cancellation: Cancellation) -> int:
         git = Git(repo)
         base, head = git.commit(args.base), git.commit(args.head)
         pin = lock_value(git.blob(base, ".quality/lock.json"), version=EXTERNAL_VERSION, schema_version=2)
-        package = cache / (pin["artifact_sha256"] + ".pyz")
+        package = outside_path(cache / (pin["artifact_sha256"] + ".pyz"), [repo], strict=True, final_symlink=False)
         verify(regular_bytes(package, MAX_ARTIFACT), pin["artifact_sha256"], pin["source"])
-        command = [sys.executable, "-I", "-S", str(package), args.command, "--repo", str(repo),
-                   "--base", base, "--head", head, "--identity", args.identity, "--state", str(args.state),
+        command = [interpreter, "-I", "-S", str(package), args.command, "--repo", str(repo),
+                   "--base", base, "--head", head, "--identity", args.identity, "--state", str(state),
                    "--artifact-sha256", pin["artifact_sha256"], "--source", pin["source"]]
         for field in ("trusted_head", "plan", "evidence", "evidence_sha256", "approved_producer",
                       "observations", "observations_sha256", "approved_observer"):
             value = getattr(args, field)
             if value is not None:
                 # Retain lexical paths: the core checks both lexical and resolved roots.
+                if field in ("evidence", "observations"):
+                    value = raw_absolute(value)
                 command.extend(["--" + field.replace("_", "-"), str(value)])
-        owned = OwnedProcess(cancellation)
+        owned = OwnedProcess(cancellation, protected_roots=[repo])
         try:
             owned.start(command, env={"PATH": os.defpath, "LC_ALL": "C"})
             code = owned.wait()
