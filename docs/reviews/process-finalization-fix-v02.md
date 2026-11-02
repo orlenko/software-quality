@@ -99,3 +99,117 @@ The adapter compatibility metadata now records this observed core source/digest
 and patch versions without changing either runtime ZIP. Adapter source S2 is a
 later metadata/evidence commit; its bundle still requires actual qualification.
 This avoids embedding an artifact digest inside its own source identity.
+
+## External and adapter actual-byte qualification
+
+The actual external 0.2.1 archive passed all 44 selected importer tests. Ordinary
+CLI cases use that archive through install/launcher/shim/import; store clock/save
+faults remain source-helper assertions. Two isolated drivers import only the
+actual package, verify its self identity and inject final-clock KeyboardInterrupt
+or output OSError followed by diagnostic KeyboardInterrupt. Current invocations
+return 1 for bound natural 7 and 2 without validated failure. These drivers are
+instrumented package checks, not real OS-signal evidence or production hooks.
+
+The separate real OS-SIGTERM case watches an accepted checkpoint, signals the owned
+CLI, and requires the current invocation's JSON report to identify handled
+interruption. It asserts that invocation's exit 1 for bound natural 7, exit 2 for
+natural 0 without complete evidence, retained disk verdict and same-byte retry.
+A supplementary one-case run uses the identical actual archive and test, selecting
+SIGINT in the parent harness instead; both code-0/code-7 assertions passed. No
+production module or package bytes were changed for either real-signal case.
+Hard termination and unavailable output channels still limit delivery/durability.
+
+Adapter source S2 is `9957f23fb87858f0f157a4e39e79211387a246e2`, tree
+`109d9794d2d7a48ec10229a0374831916354f364`. Only compatibility metadata and this
+record differ from S. The shared trust/process/frontend and both bootstraps are
+byte-identical between S and S2; neither runtime artifact was relabeled or rebuilt.
+The actual adapter 0.1.1 bundle `dist/quality-adapters-0.1.1.zip` has SHA-256
+`720ee551a1128d24cf5f4a7ff6eb6f2ca80d105796112c83c859130278f04eca` and twelve
+members including its manifest. Two clean-S2 builds were identical. Inventory,
+member digests, committed source bytes, runtime compatibility source/digest and
+shared closure were verified. All twenty context tests passed against the actual
+bundle plus actual S core: offline/context handling, metadata helpers, overflow,
+timeout, owned cancellation and failure precedence. Metadata responses/helpers
+remain invented; no live GitHub/authentication or host registration was exercised.
+
+## Additional caller found during aggregate audit
+
+The final aggregate audit found an advertised simple shim still using
+`subprocess.call`: direct SIGTERM could end it while bootstrap/runner work continued,
+and Ctrl-C could kill its bootstrap before owned failure handoff. The twenty bundle
+context tests did not exercise this caller. Therefore the S2 `720ee…` bundle remains
+unchanged but held; its context results do not qualify the entire advertised adapter.
+Runtime S core/external archives and their results remain unchanged.
+
+The independently critiqued amendment in decision 0006 reuses the adjacent approved
+frontend relay and existing cancellation utility, with explicit launcher/interpreter,
+protocol 1 and closure refusal. Replacement adapter source S3 will contain this
+reviewed shim correction and new source/bundle tests, rather than only S2 metadata.
+Source review found a caller-relative-path compatibility defect in the first fix.
+The shim now strictly resolves approved interpreter/launcher paths and supplies the
+invoking directory to the existing shared relay; relative target/cache/state inputs
+retain their meaning. Missing resources/objects return incomplete/2. The frontend
+otherwise retains its previous default directory. Initial shim checks had two
+harness errors from attempting unchanged fixture commits; independent fixtures
+fixed those errors and all three cases passed. A new relative-directory case and
+two affected frontend checks passed with the four shim cases (six tests). A further
+injected Path.cwd KeyboardInterrupt case passed after adding an incomplete/2 guard.
+The actual replacement bundle remains pending. No runtime S file changes are required.
+
+## Reproduction and preservation
+
+Use approved exact source S for runtime builds and exact source S2 for adapter
+packaging; building a later documentation commit changes source provenance and
+artifact bytes. Builders require clean source and a nonexistent output. Commands
+below describe the observed selections; the source-helper distinctions above apply.
+The complete runtime selection is intentionally limited to affected paths.
+
+```sh
+python3 -I -S tools/build.py --output dist/software-quality-0.1.1.pyz
+python3 -I -S tools/build_external.py --output dist/software-quality-external-0.2.1.pyz
+python3 -I -S tools/test.py --artifact dist/software-quality-0.1.1.pyz \
+  --match 'tests.test_owned_process|tests.test_runner.RunnerTests.test_(complete_check|required_failure|changed_script|command_environment|timeout|definite_failure|missing_command|adapter_uses|interruption|initial_report|launcher_forwards|handled_cancellation)|tests.test_context|tests.test_trust.TrustTests.test_(artifact|archive|python_startup|cached)'
+python3 -I -S tools/test_external.py --artifact dist/software-quality-external-0.2.1.pyz
+# From separately reviewed adapter source S2, retaining the approved S core:
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1.zip
+python3 -I -S tools/test.py --artifact dist/software-quality-0.1.1.pyz \
+  --adapter-bundle dist/quality-adapters-0.1.1.zip --match tests.test_context
+```
+
+Supplementary SIGINT reproduction selects the signal in the parent test harness:
+
+```sh
+python3 -I -S - <<'PYTHON'
+from pathlib import Path
+import signal, sys, unittest
+from types import SimpleNamespace
+from unittest.mock import patch
+sys.path.insert(0, str(Path.cwd()))
+import tests.test_external as cases
+cases.ARTIFACT = (Path.cwd() / 'dist/software-quality-external-0.2.1.pyz').resolve()
+suite = unittest.TestSuite([cases.ExternalTests(
+    'test_actual_cli_interrupt_after_checkpoint_preserves_failure')])
+with patch.object(cases, 'signal', SimpleNamespace(SIGTERM=signal.SIGINT)):
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
+raise SystemExit(0 if result.wasSuccessful() else 1)
+PYTHON
+```
+
+The new trusted bootstrap file SHA-256 identities at S and S2 are:
+
+| File | SHA-256 |
+| --- | --- |
+| `quality_launch.py` | `978fe442eac4355db441ea5fea1f0a3ac581606fcc2d25f9a0b68b39404bfa8c` |
+| `quality_external_launch.py` | `55f9b485a62a488ee09a88a1696559dc840c4d16a849df62676efe148295dbb1` |
+| `quality_trust.py` | `2da9b3cc5e53787fa25546b08578c5e0b3fc6b78ff778b65ca60753dc688dd4f` |
+
+New launchers require the new explicit patch pins. Old pins/state are not silently
+upgraded or migrated. Earlier frozen core, external and adapter files retain their
+original hashes and sources recorded in the historical evidence. The source-70
+external bootstrap objects retain their recorded hashes. Prior work refs remain
+unchanged. Raw outputs and local archives remain ignored and unpublished. The old
+real-executed fixture was not rerun, relabeled or used as proof for the new bytes.
+
+Main remains `e543e1a9a27d44e3ec04e862dfb184858985e260`. Final source integration
+is a separate proposal after aggregate review; no fast-forward, main push, tag,
+release, hosted archive, consumer pin/install, live provider or adoption occurs here.

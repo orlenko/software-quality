@@ -1,8 +1,9 @@
 # Command/context candidate
 
 The adapter is version `0.1.1`, protocol `1`; its
-[compatibility record](../adapters/compatibility.json) will record the separately qualified runtime source and digest; these are pending
-until the new local candidate is qualified. This is a software-quality source/skill bundle,
+[compatibility record](../adapters/compatibility.json) identifies the separately qualified runtime source and digest.
+[The correction record](reviews/process-finalization-fix-v02.md) identifies the
+actual local bundle, checks and limitations. This is a software-quality source/skill bundle,
 not an installed plugin, registered command or adopted consumer workflow.
 
 The [Codex template](../adapters/skills/cmd-quality/SKILL.md) uses `$cmd-quality`;
@@ -42,8 +43,8 @@ state. The full shared trust/process closure must accompany the frontend.
 
 The previous adapter 0.1.0 bundle and core 0.1.0 artifact remain frozen historical
 objects. Their [original evidence](reviews/command-adapters-v01.md) stays historical;
-those affected routes are held from new adoption. New 0.1.1 bytes need separate
-qualification. No plugin installer or standalone registration installer is supplied.
+those affected routes are held from new adoption. New 0.1.1 qualification is
+recorded separately and does not establish adoption. No plugin installer or standalone registration installer is supplied.
 Copying only a skill directory breaks its shared resources. Local unqualified names
 are documented host forms, not a tested install recipe for this bundle.
 

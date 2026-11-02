@@ -207,3 +207,10 @@ import traceback/exit 1, normal 0/1/2 preservation, failure precedence through
 cleanup/diagnostics, no raw signaling, and actual source/bundle-layout coverage.
 It accepted a new adapter source containing this correction while runtime S stays
 unchanged. The earlier metadata-only S2 description applies only to the held bundle.
+
+Source review additionally required preservation of caller-relative approved paths.
+The shim resolves interpreter/launcher explicitly before delegation, refuses an
+unavailable interpreter path, and supplies its original caller directory to the
+shared relay. That optional relay parameter leaves the context frontend's existing
+approved working directory unchanged. Relative target/cache/state/review inputs
+retain their prior caller meaning. A separate-cwd fixture checks this behavior.

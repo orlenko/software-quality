@@ -165,10 +165,10 @@ def core_arguments(args: Any, head: str) -> list[str]:
     return command
 
 
-def launch(command: list[str], cancellation: Cancellation) -> tuple[int, bool]:
+def launch(command: list[str], cancellation: Cancellation, *, cwd: Path | None = None) -> tuple[int, bool]:
     owned = OwnedProcess(cancellation)
     try:
-        owned.start(command, cwd=HERE, env={"PATH": SAFE_PATH, "LC_ALL": "C"})
+        owned.start(command, cwd=cwd if cwd is not None else HERE, env={"PATH": SAFE_PATH, "LC_ALL": "C"})
         code = owned.wait()
     except (Invalid, OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
         stop(owned)

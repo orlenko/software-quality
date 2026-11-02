@@ -3,7 +3,8 @@
 Engine/package `0.2.1`, config/report schema `2`, launcher/adapter protocol `2`,
 policy `0.1` unchanged. This corrects the bounded slice in
 [decision 0004](decisions/0004-external-import-slice.md). Qualification of the new
-0.2.1 bytes is pending; historical invented-record evidence belongs to 0.2.0. The separate historical fixture record covers its frozen 0.2.0
+0.2.1 bytes is recorded in the [correction evidence](reviews/process-finalization-fix-v02.md);
+historical invented-record evidence belongs to 0.2.0. The separate historical fixture record covers its frozen 0.2.0
 artifact; it does not qualify these new bytes. No consumer producer/controller, enforced environment, Linux run,
 consumer install/adoption, release or hosted artifact publication is established.
 The existing v1 execution entry and earlier source branches/local artifacts are
@@ -181,4 +182,5 @@ No unaffected old artifact suite is rerun merely to inflate counts.
 
 The [original qualification record](reviews/external-import-v02.md) records historical
 0.2.0 identities, results and independent review. It does not qualify 0.2.1. The new
-source/tree/package identities and qualification remain separate pending evidence.
+source/tree/package identities and qualification are recorded separately in the
+[correction evidence](reviews/process-finalization-fix-v02.md).

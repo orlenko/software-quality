@@ -8,6 +8,9 @@ There is no published release or verified consumer adoption. The previously froz
 because of process identity and failure-finalization defects. See
 [the correction design](docs/decisions/0006-owned-process-finalization.md); new
 local candidates require their own reviewed source and qualification evidence.
+[The correction record](docs/reviews/process-finalization-fix-v02.md) identifies
+the separately built core 0.1.1, external 0.2.1 and adapter 0.1.1 local candidates
+and their observed checks and limits.
 
 ## Start here
 
