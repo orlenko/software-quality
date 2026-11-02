@@ -1,6 +1,6 @@
 # Command adapter evidence
 
-Status: reviewed and source-tested candidate; clean bundle verification pending.
+Status: reviewed source and locally verified bundle candidate, 2026-11-02.
 No release publication, plugin/global installation, consumer access or adoption.
 
 Accepted rules/source baseline: `e543e1a9a27d44e3ec04e862dfb184858985e260`.
@@ -49,6 +49,40 @@ Reviewed final Git blobs:
 | `tools/test.py` | `b9443a15ef263ef687f2ea12c3a9ccc441fd75c0` |
 | `adapters/workflow.md` | `18d3f6a881039896a141d8971f61b06909ee8ae1` |
 
-Clean-commit bundle checks are pending. Source remains on the work branch;
-no merge or user-global/consumer installation is in
-scope. Core files, launcher, original builder and original artifact are unchanged.
+Clean-source adapter candidate: `5843cf3f1375c40338d0ca4338241641a4d5fee9`, tree
+`c5a68283a38e940d0761db5c7a11ebeb9ce3b6f6`. Source tests ran with the reviewed
+runtime/test files above, and staged bytes were checked against that working tree.
+Normal author metadata and actual staged contents were inspected before pushing.
+Only newly authored generic/synthetic assets are tracked; no raw evaluation notes,
+private data, checkout paths, tokens or consumer mappings were published.
+
+Observed builds:
+
+- `python3 -I -S tools/package_adapters.py --output dist/quality-adapters.zip`.
+- A separate build to `dist/quality-adapters-repeat.zip` produced identical bytes.
+- Adapter `0.1.0`, protocol `1`; bundle SHA-256
+  `3f7f0bb6be8ced3d1e3f47e749449fcac0ef9923d4b56162f16ce9a5ff313142`.
+  Its manifest validates 11 payload files, including both skills, shared procedure,
+  frontend, unchanged owned trust/process helpers, compatibility and license.
+- Original runner artifact bytes still match
+  `9403401102f01d87991fb2de5405eff4b7012480c955e858b8bb0a0fa2bee6a2`, source
+  `74b9b498058b11a3d99409e2d1166cbf9d171e9e`. Engine/policy/schema are unchanged
+  at `0.1.0`/`0.1`/`1`.
+
+Packaged qualification: `python3 -I -S tools/test.py --artifact
+dist/software-quality.pyz --adapter-bundle dist/quality-adapters.zip` passed all
+59 tests. The context cases ran the actual bundled frontend and helper modules,
+with its complete skill/reference layout, against fresh caches of the retained
+runner artifact. This independently exercises source versus bundle imports, the
+outside-target launcher, accepted pin, immutable arguments, wrong/ambiguous/moving
+metadata, credentials/environment, bounded output/group cleanup, cancellation and
+failure precedence. No live GitHub API, reviewer or harness registration was used.
+
+Observed environment: macOS, Python 3.14.7. Linux/other Python versions and live
+GitHub/client/harness discovery are unverified. The final follow-up changes only
+documentation; adapter/helper/test payloads remain identical to the reviewed and
+tested source. Final relative-link, whitespace, actual staged-content/metadata and
+publication checks complete the documented manual source gate; no broad automated
+secret scanner is claimed. Templates remain uninstalled and unregistered. Source
+stays on the work branch: no merge or user-global/consumer installation is in scope.
+Core files, launcher, original builder and original artifact are unchanged.

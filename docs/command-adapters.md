@@ -43,6 +43,16 @@ exercise its frontend plus the pinned runner. See
 [adapter evidence](reviews/command-adapters-v01.md) for actual source/bundle identities
 and the distinction between source tests, package checks and missing live-host proof.
 
+The recorded adapter candidate is built from source
+`5843cf3f1375c40338d0ca4338241641a4d5fee9`, bundle SHA-256
+`3f7f0bb6be8ced3d1e3f47e749449fcac0ef9923d4b56162f16ce9a5ff313142`.
+Reproduce exact bytes from that source commit; a newer documentation commit yields
+a different source/digest even when payload code is identical. No plugin installer
+or standalone local-registration installer is supplied. Copying only a skill
+directory breaks the shared resources; local unqualified names are documented host
+forms, not a tested install recipe for this bundle. The usable current entry is
+the explicit frontend below or direct use of the complete approved skill procedure.
+
 ## Explicit mode works offline
 
 Use approved outside-target adapter and launcher sources plus a trusted Python
