@@ -58,8 +58,44 @@ checks and are not production hooks. Fake OS identities test reuse/lost ownershi
 without signaling any real unrelated process. Owned real children test ordinary
 exit and descendant cleanup; uncertain platform cleanup is reported honestly.
 
-Actual clean-commit runtime builds, actual-package checks and adapter qualification
-are still pending. Their exact identities and results must be recorded separately
+At runtime source S, clean-commit builds, actual-package checks and adapter
+qualification were pending; subsequent observed results are recorded below. Their exact identities and results must be recorded separately
 before proposing a new integration target. No Linux qualification, live reviewer,
 consumer adoption, release/tag, hosted artifact publication or registration follows
 from this source record.
+
+## Runtime source and local core qualification
+
+Runtime source S is `1997a279126b0d04d9e52f0a0d26ab75bed4d7cc`, tree
+`ee23de8895366efd692920274ad0bf7341bec84f`. Independent review covered the
+committed implementation bytes; only the source-check outcome sentence was added
+after the last read-only publication disposition. The clean source produced each
+runtime archive twice in separate ignored filenames; repeat bytes were identical.
+
+| Local artifact | Version | SHA-256 | Inventory |
+| --- | --- | --- | --- |
+| `dist/software-quality-0.1.1.pyz` | 0.1.1 | `7ea70e52c8526ec370f5dbce894de8527932f3c39c8afb7ba83567f01eef40b1` | 29 members |
+| `dist/software-quality-external-0.2.1.pyz` | 0.2.1 | `cb4927a5290ba0da0892f9671e703b4ade0307a564f451f69236f165ca5b45d5` | 20 members |
+
+Both manifests name S and policy 0.1 with their original schema structures 1/2.
+Every payload digest and inventory member was checked against the actual archive
+and S's committed blobs. The expanded core now includes external modules/schemas;
+its actual archive's complete import closure was checked in isolated Python,
+including shared evidence exports. This does not turn its v1 entry point into an
+external route. The separate external archive contains exactly seven quality
+modules and seven external schemas, no core CLI/process/runner modules. Its shared
+trust file contains the generic ownership utility but the external entry does not
+dispatch a target gate.
+
+The actual core affected selection passed 51 tests on Darwin arm64, Python 3.14.7.
+Twenty context cases use the source frontend and actual core; twelve legacy cases
+exercise actual core execution/launcher behavior; four trust cases validate actual
+artifact/default-pin/startup boundaries; fifteen process/caller cases exercise
+source helpers, fake OS faults and owned benign children. This is a mixed evidence
+selection, not 51 actual-package-only cases or a full historical suite rerun.
+No Linux or Python 3.11 execution was performed.
+
+The adapter compatibility metadata now records this observed core source/digest
+and patch versions without changing either runtime ZIP. Adapter source S2 is a
+later metadata/evidence commit; its bundle still requires actual qualification.
+This avoids embedding an artifact digest inside its own source identity.
