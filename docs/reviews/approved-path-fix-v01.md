@@ -98,3 +98,43 @@ main update, archive upload, release/tag, registration, consumer operation or se
 change occurs here. Darwin/Python3.14.7 is the observed platform; Linux/Python3.11,
 live providers/reviewers, hostile-code containment and consumer adoption remain
 unqualified. A new exact source proposal follows only after the remaining gates.
+
+## Runtime R actual-byte qualification
+
+Reviewed clean runtime source R is `6ab57e0d0f6dbc786d081ec85d34bdc7230b3503`, tree
+`cde0338ea84f6fa3ccaf62c3b52a926228c27574`. The staged source/publication gate was
+independently cleared before committing; reviewed blobs matched staged/working bytes.
+Two builds of each new versioned local archive were byte-identical.
+
+| Local archive | Version / schema | SHA-256 | Members |
+| --- | --- | --- | --- |
+| `dist/software-quality-0.1.2.pyz` | 0.1.2 / 1 | `baefa1331deae8cefcd4eb030887cf8a7a9425d2bac3eb37eb5823e3d3a0d33d` | 29 |
+| `dist/software-quality-external-0.2.2.pyz` | 0.2.2 / 2 | `6c4082b2d663e7f71480e333482486bb82e06ad354c7a21b98d7866b27ffe934` | 20 |
+
+Every inventory/member digest and committed payload blob was checked against R.
+Generated entrypoints match their reviewed literal builders. Actual expanded-core
+module origins/import closure, evidence aliases and patch identities were verified
+in isolated Python, without dispatching a target gate. The separate external ZIP
+retains exactly seven quality modules and seven external schemas, without core CLI,
+process or runner modules. Shared trust contains generic helpers but adds no external
+gate-dispatch entry.
+
+The actual core selection passed88 checks on Darwin arm64/Python3.14.7. It includes
+65 affected regression cases listed above,11 pure source walker/context tests and12
+caller/default cases. Source-bootstrap and source frontend/shim tests use the actual
+core archive; direct package/default tests import that archive. The copied protocol2
+shim/marker-bootstrap experiment is source-only and makes no initial-load prevention
+claim. Counts are mixed source-helper/actual-byte evidence, not88 package-only tests.
+The independent reviewers inspected the source; they did not rerun these checks.
+
+Adapter compatibility now records R and the actual observed core digest. Later
+adapter source A contains that metadata, leaving both runtime archives unchanged.
+The actual external selection also passed50 checks:36 established importer cases,
+8 finalization cases and6 approved-path/default cases. Ordinary CLI routes use the
+actual R archive; source store/clock injection helpers remain separately labeled.
+Isolated package drivers import only the actual R archive and verify reached unsafe
+clock selection before asserting refusal at initial, issuance and final phases.
+The final known-failure invocation remains1. Parent/no-parent receipt/observer paths,
+terminal-link refusal and immutable retained failure slots are exercised too.
+Adapter-A build/qualification, final aggregate and publication checks remain pending
+at this checkpoint.
