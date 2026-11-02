@@ -194,3 +194,11 @@ python3 -I -S tools/test_external.py
 python3 -I -S tools/build_external.py --output dist/software-quality-external.pyz
 python3 -I -S tools/test_external.py --artifact dist/software-quality-external.pyz
 ```
+
+The [owned real-executed fixture qualification](docs/reviews/external-fixture-qualification-v01.md)
+now records one harmless invented gate: natural pass/failure, real timeout and
+controller interruption, with measured consumption, supervision and cleanup through
+the unchanged frozen 0.2 artifact. Timeout/interruption remain incomplete. This
+qualifies the narrow fixture route; consumer security, dependencies, live reviewers
+and adoption remain unqualified. Reproduction requires the documented exact-source
+review/approval procedure and a disposable outside-target root.
