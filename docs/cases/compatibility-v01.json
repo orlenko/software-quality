@@ -1,0 +1,341 @@
+{
+  "kind": "proposed-compatibility-cases",
+  "version": 1,
+  "executable": false,
+  "status": "invented-design-examples-not-executed-results",
+  "outcome_condition": "Proposed overall assumes all other required obligations pass; no current runner support is implied.",
+  "cases": [
+    {
+      "id": "complete-external-canonical-gate",
+      "class": "established-application",
+      "facts": [
+        "The normal canonical gate subject is already-known committed target H/tree T; a durable plan challenge precedes its invocation.",
+        "An authenticated owner-approved external producer supplies complete coverage and actual control witnesses, with an accepted mechanism establishing consumed inputs beyond endpoint equality.",
+        "Actual index equals T before and after; the gate naturally completes with zero exit inside its explicitly enforced approved budget."
+      ],
+      "proposed_overall": "pass",
+      "evidence_basis": "external-attestation",
+      "reason": "A future importer can accept the configured complete attestation without claiming it executed the gate."
+    },
+    {
+      "id": "partial-staging-is-not-the-commit",
+      "class": "actual-index",
+      "facts": [
+        "Actual staged tree I differs from requested committed tree T.",
+        "A real staged-index gate succeeds for I while unstaged content also differs."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "separately-scoped-index-evidence",
+      "reason": "Do not promote an index result to a different committed subject or demand a duplicate run solely for import."
+    },
+    {
+      "id": "synthetic-index-is-not-actual-index",
+      "class": "actual-index",
+      "facts": [
+        "A generated snapshot index contains public tracked files.",
+        "The required gate consumes the operator's actual staged index and approved private-input readiness."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "wrong-input-scope",
+      "reason": "Matching some tree bytes does not establish actual index or private-input coverage."
+    },
+    {
+      "id": "history-and-ref-inputs-missing",
+      "class": "history-ref",
+      "facts": [
+        "The canonical gate needs an ordered set of new commits and ref-input records.",
+        "An invocation provides no ref input and selects no commits but exits zero."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "external-attestation-with-missing-coverage",
+      "reason": "Zero work is not successful coverage of the required commit set."
+    },
+    {
+      "id": "current-main-changed",
+      "class": "history-ref",
+      "facts": [
+        "A receipt passed with current-main reference R1.",
+        "The accepted gate depends on that reference; import observes R2."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "stale-context",
+      "reason": "Receipt age alone cannot preserve evidence whose consumed ref changed."
+    },
+    {
+      "id": "conditional-gate-not-applicable",
+      "class": "conditional-selection",
+      "facts": [
+        "The accepted registry explicitly makes a local subgate conditional.",
+        "Its approved selector and complete immutable inputs witness false; no shared mandatory gate is removed."
+      ],
+      "proposed_overall": "pass",
+      "evidence_basis": "external-applicability-attestation",
+      "reason": "Report not-applicable separately; never claim the command ran."
+    },
+    {
+      "id": "head-selector-removes-required-gate",
+      "class": "conditional-selection",
+      "facts": [
+        "A head-side selector/config attempts to mark a required gate optional; no accepted result exists for this gate.",
+        "It differs from the accepted selector/rules."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "unaccepted-selection",
+      "reason": "Reject the new authority; any other valid bound required failure still causes fail."
+    },
+    {
+      "id": "subset-or-cache-does-not-cover-whole-gate",
+      "class": "cache-coverage",
+      "facts": [
+        "A whole uncached gate is required.",
+        "Only a short filtered/cached subset is attested; equivalence for the complete input/dependent set is absent."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "partial-external-attestation",
+      "reason": "Do not relabel the subset or split as an equivalent full gate."
+    },
+    {
+      "id": "long-gate-with-explicit-new-budget",
+      "class": "finite-budget",
+      "facts": [
+        "The unchanged current runner cannot execute this gate within 600 seconds.",
+        "Only a future explicitly adopted external route permits 1200 seconds; its trusted producer attests a complete 840-second gate and cleanup."
+      ],
+      "proposed_overall": "pass",
+      "evidence_basis": "external-attestation-under-proposed-version",
+      "reason": "This is a proposed new capability, never an override or existing feature."
+    },
+    {
+      "id": "successful-exit-after-budget-overrun",
+      "class": "finite-budget",
+      "facts": [
+        "The declared route budget is 1200 seconds.",
+        "Actual elapsed time is 1510 seconds even though exit is zero."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "external-timing-attestation",
+      "reason": "The importer cannot retroactively enforce or extend the budget."
+    },
+    {
+      "id": "definite-failure-with-interrupted-output",
+      "class": "failure-precedence",
+      "facts": [
+        "A valid context-bound required command is witnessed naturally completing with nonzero exit before output cleanup is interrupted.",
+        "A child holds output open; timeout, cancellation and cleanup facts are incomplete."
+      ],
+      "proposed_overall": "fail",
+      "evidence_basis": "external-attestation",
+      "reason": "Preserve command failure and each incomplete output/cleanup axis."
+    },
+    {
+      "id": "kill-with-unknown-exit-and-orphan",
+      "class": "interruption-cleanup",
+      "facts": [
+        "An external job is killed without a final exit witness.",
+        "An owned helper may remain; no cleanup receipt exists."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "missing-external-completion",
+      "reason": "Inspect/reconcile before retry; an importer cannot kill an already external job."
+    },
+    {
+      "id": "wrong-first-party-import-origin",
+      "class": "experiment-dependencies",
+      "facts": [
+        "The planned public source snapshot is T.",
+        "A preprovisioned interpreter imports an editable first-party module from an older checkout O."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "wrong-source-origin",
+      "reason": "Environment availability and a zero exit cannot bind the result to T."
+    },
+    {
+      "id": "unexpected-dependency-provisioning",
+      "class": "experiment-dependencies",
+      "facts": [
+        "The accepted effects allow only preprovisioned offline dependencies.",
+        "The canonical command provisions a different environment using an unapproved network effect."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "unmet-effects-and-environment-controls",
+      "reason": "A receipt cannot authorize the past effect or trigger a download/retry."
+    },
+    {
+      "id": "private-input-skip",
+      "class": "privacy-inputs",
+      "facts": [
+        "A required actual-index privacy gate also needs an owner-approved private input.",
+        "The source-only run lacks it and reports a skip."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "missing-input-readiness",
+      "reason": "Neither a public fixture nor a manual assertion that tests exited zero supplies the private check."
+    },
+    {
+      "id": "required-controls-with-unknown-actual-enforcement",
+      "class": "reviewer-boundary",
+      "facts": [
+        "Accepted policy requires enforced tracked-source tool/path/network permissions.",
+        "A route is described as read-only, but actual enforcement is unknown and no mechanism witness exists."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "manual-fact-not-enforcement",
+      "reason": "Keep required, actual and manual objects distinct; do not invent enforced=true."
+    },
+    {
+      "id": "private-derived-image-without-disclosure-authority",
+      "class": "reviewer-boundary",
+      "facts": [
+        "An authorized route covers public source only.",
+        "A proposed local viewer would return private-derived pixels into hosted context."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "unavailable-authorized-review-route",
+      "reason": "Do not perform the disclosure or fabricate a review record."
+    },
+    {
+      "id": "replayed-or-self-authenticated-receipt",
+      "class": "evidence-provenance",
+      "facts": [
+        "A receipt belongs to a consumed plan or carries only its own expected digest/producer claim.",
+        "No accepted outside-target provenance binds it to the new plan."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "untrusted-or-replayed-data",
+      "reason": "Digest consistency, timestamps and identity strings cannot establish authority."
+    },
+    {
+      "id": "valid-failure-plus-malformed-extra",
+      "class": "failure-precedence",
+      "facts": [
+        "One independent route has a valid bound required failure.",
+        "Another record is malformed, duplicated or conflicts with its required route."
+      ],
+      "proposed_overall": "fail",
+      "evidence_basis": "mixed-valid-and-incomplete-evidence",
+      "reason": "Reject bad evidence without choosing the last duplicate or erasing a validated failure."
+    },
+    {
+      "id": "missing-bootstrap-and-historical-proof",
+      "class": "adoption-history",
+      "facts": [
+        "The historical accepted base has no accepted toolkit config/lock.",
+        "A current corrective review does not attest an unavailable required historical pre-code critique."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "missing-authority-and-history",
+      "reason": "A later separate bootstrap and current review cannot manufacture historical evidence."
+    },
+    {
+      "id": "unit-coverage-is-not-required-domain-evaluation",
+      "class": "product-experiment",
+      "facts": [
+        "Public unit checks pass for an invented analysis experiment.",
+        "Its existing acceptance requires representative output/human evaluation that remains pending; no new reference-label requirement is added."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "missing-existing-product-evidence",
+      "reason": "Keep uncertainty and automatic/manual judgments separate; test counts do not establish domain accuracy."
+    },
+    {
+      "id": "input-changes-and-is-restored",
+      "class": "consumed-input-identity",
+      "facts": [
+        "An actual index/file/ref changes during execution and is restored before the final snapshot.",
+        "Only pre/post endpoint equality exists; no accepted consumed-input identity mechanism is demonstrated."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "matching-endpoints-only",
+      "reason": "Do not infer the bytes actually consumed from equal endpoint observations."
+    },
+    {
+      "id": "timeout-wrapper-nonzero-without-natural-outcome",
+      "class": "failure-classification",
+      "facts": [
+        "A deadline wrapper emits 124 or 137 after terminating work.",
+        "No witness establishes a naturally completed required command failure."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "termination-only",
+      "reason": "An unexplained nonzero or signal status is not proof of a completed functional failure."
+    },
+    {
+      "id": "complete-cache-reuse-under-accepted-rule",
+      "class": "cache-provenance",
+      "facts": [
+        "The accepted canonical gate explicitly permits cache equivalence rather than requiring an uncached run.",
+        "The original complete result identity, producer, context, outcome and completion time remain intact and within the accepted finite cache age.",
+        "A newly challenged canonical assessment establishes complete equivalence and all volatile consumed inputs with the accepted mechanism; import is inside its 900-second maximum window."
+      ],
+      "proposed_overall": "pass",
+      "evidence_basis": "external-equivalence-attestation",
+      "reason": "Label cached reuse and preserve original provenance; never call this a new uncached full run."
+    },
+    {
+      "id": "old-cache-restamped-with-new-challenge",
+      "class": "cache-provenance",
+      "facts": [
+        "A producer wraps an old cached success in a fresh challenge/timestamp.",
+        "The original completion is expired or omitted and no genuine accepted current equivalence assessment exists."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "restamped-historical-result",
+      "reason": "A new attestation cannot renew cache age or supply missing current coverage."
+    },
+    {
+      "id": "equal-index-tree-different-commit-phase",
+      "class": "actual-index-phase",
+      "facts": [
+        "A real pre-commit gate saw staged tree T with earlier HEAD, intended message and refs.",
+        "A later committed target also has tree T, but those consumed phase inputs differ; no accepted promotion equivalence exists."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "unestablished-cross-phase-binding",
+      "reason": "Known-target import cannot silently promote pre-commit history even with equal trees."
+    },
+    {
+      "id": "invalid-envelope-containing-failure-text",
+      "class": "evidence-parsing",
+      "facts": [
+        "Envelope bytes are invalid or unreadable.",
+        "Some untrusted fragment appears to describe a failure, but no complete common context/route has been validated."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "unparsed-unbound-data",
+      "reason": "Do not salvage a claimed result from invalid bytes; separately persisted valid failures remain intact."
+    },
+    {
+      "id": "crash-after-persisted-required-failure",
+      "class": "local-record-recovery",
+      "facts": [
+        "A bound required natural failure and its accepted digest/consumption state were atomically persisted.",
+        "Import is interrupted while processing another route; retry presents the same or a conflicting receipt in the intact same-context local record."
+      ],
+      "proposed_overall": "fail",
+      "evidence_basis": "persisted-validated-external-attestation",
+      "reason": "Resume/return the stored result without rerun or overwrite; do not claim global replay protection across lost state."
+    },
+    {
+      "id": "elapsed-inside-cap-enforcement-unknown",
+      "class": "execution-control",
+      "facts": [
+        "The command appears to finish with zero exit inside the declared budget.",
+        "Policy requires an enforced deadline/cleanup boundary, but its actual mechanism is unknown."
+      ],
+      "proposed_overall": "incomplete",
+      "evidence_basis": "elapsed-attestation-without-required-control",
+      "reason": "Elapsed facts alone cannot establish required enforcement."
+    },
+    {
+      "id": "accepted-success-then-valid-conflicting-failure",
+      "class": "local-record-recovery",
+      "facts": [
+        "An intact same-context route record contains an accepted success.",
+        "A separately authenticated and validated receipt establishes a naturally completed required failure for that same context."
+      ],
+      "proposed_overall": "fail",
+      "evidence_basis": "conflicting-validated-external-evidence",
+      "reason": "Keep original history immutable, retain the valid failure and incomplete conflict, and never ignore a known failure merely because a slot was consumed."
+    }
+  ]
+}
