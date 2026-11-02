@@ -2,6 +2,13 @@
 
 Prepared 2026-11-02. This is a documentation bootstrap for a dedicated quality-toolkit maintainer. No runtime implementation, consumer command, release tag, or consumer adoption is being claimed.
 
+Implementation follow-up: the initial runner candidate now has an explicit
+base/head interface, offline pin verification and a recorded-review protocol.
+See the current [README](README.md), [decision](docs/decisions/0001-minimal-runner.md)
+and [bootstrap evidence](docs/reviews/bootstrap-v01.md) for its actual commands,
+verification and limitations. The original milestone below remains historical
+context; no release or consumer adoption follows from source integration.
+
 ## User goal
 
 Several personal software projects are developed concurrently by humans and agents coordinating through an orchestra. Their quality processes vary. Maintain shared development rules and reusable quality tooling in one public, tagged repository so improvements can be made consistently, without copying the full policy into every project.

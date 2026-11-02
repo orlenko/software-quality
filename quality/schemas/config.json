@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Software Quality config v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "trusted_local": {
+          "type": "boolean"
+        },
+        "isolation": {
+          "enum": [
+            "owner-approved-wrapper",
+            "unavailable"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "[a-z][a-z0-9-]{0,39}"
+              },
+              "argv": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096
+                },
+                "minItems": 1,
+                "maxItems": 32
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 600
+              },
+              "max_log_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 1048576
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "minItems": 1,
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "id",
+              "argv",
+              "timeout_seconds",
+              "max_log_bytes",
+              "effects"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "trusted_local",
+        "isolation",
+        "checks"
+      ],
+      "additionalProperties": false
+    },
+    "reviewer": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "recorded-v1"
+        },
+        "require_distinct_identities": {
+          "type": "boolean"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "[a-z][a-z0-9-]{0,39}"
+              },
+              "reviewer_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "boundary": {
+                "$ref": "common.json#/$defs/boundary"
+              }
+            },
+            "required": [
+              "id",
+              "reviewer_id",
+              "boundary"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "protocol",
+        "require_distinct_identities",
+        "routes"
+      ],
+      "additionalProperties": false
+    },
+    "references": {
+      "type": "object",
+      "properties": {
+        "instructions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "threat_model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "integration": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "instructions",
+        "architecture",
+        "threat_model",
+        "integration"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "repository",
+    "execution",
+    "reviewer",
+    "references"
+  ],
+  "additionalProperties": false
+}

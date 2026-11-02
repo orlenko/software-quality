@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Software Quality report v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "mode": {
+      "enum": [
+        "doctor",
+        "check"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "finished_at": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100
+    },
+    "context": {
+      "$ref": "common.json#/$defs/context"
+    },
+    "tool_mode": {
+      "enum": [
+        "artifact",
+        "experimental"
+      ]
+    },
+    "effective_plan": {
+      "$ref": "config.json"
+    },
+    "source_before": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "status_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "head",
+        "status_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "source_after": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "status_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        }
+      },
+      "required": [
+        "head",
+        "status_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096
+      },
+      "minItems": 0,
+      "maxItems": 20000
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "incomplete"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "exit_code": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 255
+          },
+          "log": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reason",
+          "exit_code",
+          "log"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 140
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "response_sha256": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 64
+        },
+        "evidence_kind": {
+          "const": "external-attestation"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "review-record.json"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "response_sha256",
+        "evidence_kind",
+        "records"
+      ],
+      "additionalProperties": false
+    },
+    "overall": {
+      "enum": [
+        "pass",
+        "fail",
+        "incomplete"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "run_id",
+    "mode",
+    "started_at",
+    "finished_at",
+    "context",
+    "tool_mode",
+    "effective_plan",
+    "source_before",
+    "source_after",
+    "changed_paths",
+    "stages",
+    "review",
+    "overall"
+  ],
+  "additionalProperties": false
+}

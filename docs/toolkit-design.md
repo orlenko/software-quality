@@ -1,6 +1,6 @@
 # Shared software quality toolkit
 
-Candidate design, 2026-11-02, alongside the [development standard](development-standard.md). This public repository is the documentation bootstrap for shared quality rules and a versioned runner with small consumer commands. The runner, package and release process are not implemented yet.
+Candidate design, 2026-11-02, alongside the [development standard](development-standard.md). This repository holds shared quality rules and the initial runner candidate. The [implementation decision](decisions/0001-minimal-runner.md) and [README](../README.md) describe its bounded explicit-target/manual-review interface. Release publication, live reviewer automation and consumer adoption are not implemented or claimed.
 
 ## One source with small consumers
 
@@ -14,7 +14,7 @@ The desired experience is `/quality` or `$cmd_quality` resolving the current PR 
 
 Keep the first release to configuration validation, exact-diff inspection, trusted local checks, one independent review route, and a structured evidence report. Start with one general code-review lens and the existing design-review lens; add specialist routing only where pilots show that it catches missed defects. Do not start with a fleet scheduler, database, dashboard, automatic fixes, merge controller, hosted service, or telemetry.
 
-Conceptual commands, not installed interfaces:
+Conceptual commands for the broader design; see the README for current Python entry points:
 
 ```text
 quality doctor

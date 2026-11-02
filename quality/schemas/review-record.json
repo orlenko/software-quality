@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Software Quality review-record v1",
+  "type": "object",
+  "properties": {
+    "route_id": {
+      "type": "string",
+      "pattern": "[a-z][a-z0-9-]{0,39}"
+    },
+    "reviewer_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "independent": {
+      "const": true
+    },
+    "boundary": {
+      "$ref": "common.json#/$defs/boundary"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "common.json#/$defs/finding"
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    }
+  },
+  "required": [
+    "route_id",
+    "reviewer_id",
+    "independent",
+    "boundary",
+    "findings",
+    "summary"
+  ],
+  "additionalProperties": false
+}

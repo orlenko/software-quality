@@ -4,7 +4,7 @@ These rules apply to humans and agents changing this repository. Read [HANDOFF.m
 
 ## Scope and status
 
-This is the shared policy and tooling repository. The candidate standard describes intended consumer practices; publishing it does not adopt it on any consumer's behalf. There is no implemented runner or release yet. Do not report proposed commands or test scenarios as working features.
+This is the shared policy and tooling repository. The candidate standard describes intended consumer practices; publishing it does not adopt it on any consumer's behalf. The initial runner is a pilot candidate; no release or consumer adoption is claimed. Report only commands and scenarios supported by actual evidence.
 
 Keep generic policy, schemas, orchestration and verdict semantics here. Consumer repositories keep their commands, architecture, threat model, permissions and explicit exceptions. Agent adapters invoke the pinned runner; they do not implement separate policy engines.
 

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "repository": "example/demo",
+  "execution": {
+    "trusted_local": false,
+    "isolation": "unavailable",
+    "checks": [
+      {
+        "id": "unit",
+        "argv": [
+          "python3",
+          "-I",
+          "-S",
+          "tools/test.py"
+        ],
+        "timeout_seconds": 120,
+        "max_log_bytes": 65536,
+        "effects": [
+          "disposable-files"
+        ]
+      }
+    ]
+  },
+  "reviewer": {
+    "protocol": "recorded-v1",
+    "require_distinct_identities": true,
+    "routes": [
+      {
+        "id": "independent",
+        "reviewer_id": "example-independent-reviewer",
+        "boundary": {
+          "read_only": true,
+          "enforced": true,
+          "paths": "tracked-source",
+          "tools": [
+            "source-read",
+            "diff-read"
+          ],
+          "network": false,
+          "disclosure": "none"
+        }
+      }
+    ]
+  },
+  "references": {
+    "instructions": "AGENTS.md",
+    "architecture": "docs/architecture.md",
+    "threat_model": "docs/threat-model.md",
+    "integration": "docs/integration.md"
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Software Quality common v1",
+  "$defs": {
+    "context": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "base": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "head": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "base_tree": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "head_tree": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "config_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "lock_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}"
+        },
+        "toolkit_source": {
+          "type": "string",
+          "pattern": "(?:[0-9a-f]{40}|[0-9a-f]{64})"
+        },
+        "policy_version": {
+          "const": "0.1"
+        },
+        "schema_version": {
+          "const": 1
+        }
+      },
+      "required": [
+        "repository",
+        "base",
+        "head",
+        "base_tree",
+        "head_tree",
+        "config_sha256",
+        "lock_sha256",
+        "artifact_sha256",
+        "toolkit_source",
+        "policy_version",
+        "schema_version"
+      ],
+      "additionalProperties": false
+    },
+    "boundary": {
+      "type": "object",
+      "properties": {
+        "read_only": {
+          "const": true
+        },
+        "enforced": {
+          "const": true
+        },
+        "paths": {
+          "const": "tracked-source"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "source-read",
+              "diff-read"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "network": {
+          "type": "boolean"
+        },
+        "disclosure": {
+          "enum": [
+            "none",
+            "public-source",
+            "owner-authorized"
+          ]
+        }
+      },
+      "required": [
+        "read_only",
+        "enforced",
+        "paths",
+        "tools",
+        "network",
+        "disclosure"
+      ],
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "severity": {
+          "enum": [
+            "blocker",
+            "improvement"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "open",
+            "resolved"
+          ]
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "scenario": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "consequence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "recommendation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "resolution": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "disposition",
+        "location",
+        "scenario",
+        "consequence",
+        "recommendation",
+        "resolution"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

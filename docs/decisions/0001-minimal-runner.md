@@ -50,10 +50,15 @@ operator still supplies independent review through an explicit protocol.
   symlinks and gitlinks. Fresh roots do not isolate platform credential stores.
   A required accepted check isolation wrapper must cover its actual data stores
   and effects; insufficient declared capability leaves execution incomplete.
+  Every check receives a fresh export. Verify tracked raw bytes and executable
+  modes before and after; mutation makes snapshot evidence incomplete without
+  erasing any observed command failure. Generated untracked output is permitted.
 - Checks are argv arrays, never shell fragments; a shell may be named explicitly
   only as part of an accepted trusted command. Record their declared effects,
   bounded timeouts/log sizes and exit status; keep raw output private in the run directory.
   A zero exit is successful command evidence, not product correctness proof.
+  Command exit, output completeness and snapshot integrity are separate required
+  stages, preserving definite failure when output/cleanup is incomplete.
 - The only first reviewer interface is `recorded-v1`: an independent human or
   agent supplies a strict JSON attestation bound to repo/base/head/trees,
   effective configuration digest, reviewer identity, policy and artifact.
@@ -67,6 +72,13 @@ operator still supplies independent review through an explicit protocol.
   Two-step workflow: generate the effective plan/context, commission the review,
   then pass the response and independently approved digest. Read/hash/parse the
   same bytes, with bounded input size.
+  Accepted configuration names every required route and reviewer identity, with
+  an explicit distinct-identity requirement. Each route receives its own required
+  stage and records `evidence_kind: external-attestation`. A common context is
+  validated first, then each route independently. Missing/invalid/duplicate or
+  unexpected evidence is incomplete; it cannot erase a valid open blocker from
+  another record. Never choose the last duplicate. This accounts for stronger
+  multi-review consumers without replacing their local obligations.
 - One integrator owns source and integration. Independent native reviewers may
   inspect newly authored public toolkit files under this session's existing
   authority; they must not access private inputs or execute target code. No
@@ -151,3 +163,10 @@ The reviewer preferred direct ZIP execution over extraction. Recommendations
 accepted: POSIX-only initial support, bounded output, honest SIGKILL limits,
 explicit two-step review workflow and same-byte review validation. These are
 implementation obligations, not evidence that they work yet.
+
+The same reviewer separately critiqued the multi-route clarification before its
+implementation: no architectural blocker, provided route validation preserves
+valid blockers in the presence of malformed, duplicate or unknown extra records;
+accepted identities control required routes; distinct identities are explicitly
+checked when required; and summaries cannot override findings. All were accepted
+with corresponding regression cases. No second review-provider route was added.
