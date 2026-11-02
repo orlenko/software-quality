@@ -28,9 +28,9 @@ From a clean reviewed adapter-source checkout:
 
 ```sh
 python3 -I -S tools/test.py
-python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1.zip
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1-relay-fixed.zip
 python3 -I -S tools/test.py \
-  --artifact dist/software-quality-0.1.1.pyz --adapter-bundle dist/quality-adapters-0.1.1.zip
+  --artifact dist/software-quality-0.1.1.pyz --adapter-bundle dist/quality-adapters-0.1.1-relay-fixed.zip
 ```
 
 The runtime and adapter source identities are separate. Build the runtime from a
@@ -47,6 +47,11 @@ those affected routes are held from new adoption. New 0.1.1 qualification is
 recorded separately and does not establish adoption. No plugin installer or standalone registration installer is supplied.
 Copying only a skill directory breaks its shared resources. Local unqualified names
 are documented host forms, not a tested install recipe for this bundle.
+
+The first local 0.1.1 bundle is also held: aggregate review found its advertised
+simple shim still bypassed owned cancellation. The separately identified corrected
+bundle above includes that fix and direct shim checks. Use its exact S3 source and
+digest from the correction record; neither older file is silently replaced.
 
 ## Explicit mode works offline
 

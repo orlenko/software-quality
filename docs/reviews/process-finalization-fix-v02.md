@@ -154,11 +154,43 @@ harness errors from attempting unchanged fixture commits; independent fixtures
 fixed those errors and all three cases passed. A new relative-directory case and
 two affected frontend checks passed with the four shim cases (six tests). A further
 injected Path.cwd KeyboardInterrupt case passed after adding an incomplete/2 guard.
-The actual replacement bundle remains pending. No runtime S file changes are required.
+The replacement qualification below covers the corrected source. No runtime S file
+changes were required.
+
+## Replacement adapter qualification
+
+Replacement adapter source S3 is `a3e74ed210311735395ebd8b4180f8fbb54feed3`, tree
+`23e9f771b82f46f1bb932cf263fdcdf16ecb0f3f`. Independent adversarial review accepted
+the shim, optional frontend relay directory, tests and follow-up fixes before this
+commit. Current simple-shim and frontend payload changes are intentional; runtime
+S code, trust/process utilities and both bootstraps remain unchanged.
+
+The corrected `dist/quality-adapters-0.1.1-relay-fixed.zip` has SHA-256
+`43435c2770ae093f91c3e5374f0352e13f26ac0435f032c3202ab1e8af754ee4`. Two clean-S3
+builds were identical. Its twelve members, manifest source/version/protocol,
+committed payload blobs, shared closure and actual S core compatibility pin were
+verified. Compared with the held S2 bundle, only the two adapter Python payloads
+and source/file manifest change; the compatibility/core identity stays fixed.
+
+All 25 selected checks passed against the actual corrected bundle and S core:
+twenty frontend context cases and five direct simple-shim cases. Normal delegation
+returns 0/1/2 as appropriate; pin/protocol overrides, missing closure and unavailable
+explicit interpreter refuse with 2. Relative approved paths/target/cache/state keep
+the caller's meaning. A test-side path-setup KeyboardInterrupt returns 2 before a
+core launch. Real SIGINT and SIGTERM each exercise active work and a naturally
+completed nonzero leader, require this invocation's run-interrupted report and
+exit 2/1, and observe the benign leader/descendant stopped with read-only process
+queries. No unknown identity is signaled and no PID reuse is forced. These checks
+prove the owned fixture paths, not universal platform cleanup or consumer gates.
+
+The earlier S2 `quality-adapters-0.1.1.zip` / `720ee…` bytes are preserved and held;
+only this separately identified corrected bundle is proposed. No artifact was
+uploaded or automatically installed. Final aggregate review remains a source and
+evidence gate before a separate source integration proposal.
 
 ## Reproduction and preservation
 
-Use approved exact source S for runtime builds and exact source S2 for adapter
+Use approved exact source S for runtime builds and exact source S3 for adapter
 packaging; building a later documentation commit changes source provenance and
 artifact bytes. Builders require clean source and a nonexistent output. Commands
 below describe the observed selections; the source-helper distinctions above apply.
@@ -170,10 +202,10 @@ python3 -I -S tools/build_external.py --output dist/software-quality-external-0.
 python3 -I -S tools/test.py --artifact dist/software-quality-0.1.1.pyz \
   --match 'tests.test_owned_process|tests.test_runner.RunnerTests.test_(complete_check|required_failure|changed_script|command_environment|timeout|definite_failure|missing_command|adapter_uses|interruption|initial_report|launcher_forwards|handled_cancellation)|tests.test_context|tests.test_trust.TrustTests.test_(artifact|archive|python_startup|cached)'
 python3 -I -S tools/test_external.py --artifact dist/software-quality-external-0.2.1.pyz
-# From separately reviewed adapter source S2, retaining the approved S core:
-python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1.zip
+# From separately reviewed adapter source S3, retaining the approved S core:
+python3 -I -S tools/package_adapters.py --output dist/quality-adapters-0.1.1-relay-fixed.zip
 python3 -I -S tools/test.py --artifact dist/software-quality-0.1.1.pyz \
-  --adapter-bundle dist/quality-adapters-0.1.1.zip --match tests.test_context
+  --adapter-bundle dist/quality-adapters-0.1.1-relay-fixed.zip --match 'tests.test_context|tests.test_legacy_shim'
 ```
 
 Supplementary SIGINT reproduction selects the signal in the parent test harness:
@@ -213,3 +245,15 @@ real-executed fixture was not rerun, relabeled or used as proof for the new byte
 Main remains `e543e1a9a27d44e3ec04e862dfb184858985e260`. Final source integration
 is a separate proposal after aggregate review; no fast-forward, main push, tag,
 release, hosted archive, consumer pin/install, live provider or adoption occurs here.
+
+Final independent aggregate inspection found no remaining source or qualification
+blocker for a new integration proposal. It covered the original ownership and
+failure-finalization paths, the advertised shim correction, source S/S3 continuity,
+actual archive identities/inventories and observed logs, including their mixed
+source/package limits. A separate final factual/publication review cleared the two
+document changes. Both reviews used read-only inspection of source, hashes,
+archives and existing logs, with no imports, execution, writes or Git metadata
+mutations. The integrator checked staged content/metadata and preserved identities.
+A documentation-only completion needs no additional runtime rerun. This disposition
+supports a new exact work-branch source proposal only; main integration remains a
+separate operation and the held S2 bundle is not cleared.
