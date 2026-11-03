@@ -34,6 +34,11 @@ The toolkit's own [pinned inspection setup](docs/toolkit-self-adoption.md) is a
 partial self-adoption: required target checks and authentic reviewer evidence stay
 incomplete. It uses an approved outside-target R2 bootstrap, not head-side code.
 
+The source-owned [manual review workflow v0.2](docs/review-workflow.md) adds strong
+small-PR guidance, specialist review lenses, an independent bug hunt and finding
+adjudication. It is a manual supplement to policy0.1; other repositories adopt it
+explicitly. Automated orchestration and live reviewer activation are separate.
+
 ```sh
 git clone https://github.com/orlenko/software-quality.git
 cd software-quality

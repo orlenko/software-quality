@@ -22,6 +22,11 @@ Before nontrivial implementation, write the user problem, observable acceptance 
 
 Every code change receives an independent adversarial review before integration. Findings need a reachable scenario and consequence. Fix valid blockers and re-review affected fixes; track deferred nonblocking work. Review changes to the policy and runner against the previously accepted rules, not rules introduced by the change itself. The first implementation uses a separately recorded bootstrap review.
 
+This repository adopts the [manual review workflow v0.2](docs/review-workflow.md)
+for planning small increments, selecting review lenses and reconciling findings.
+Its manual source-process adoption does not change pinned runtime policy0.1,
+activate reviewers, or establish an authentic enforced reviewer route.
+
 Run the safe checks appropriate to the change, bind results to the reviewed tree, and report failures and missing evidence honestly. Use a documented manual check when automation is unsuitable. Documentation-only work needs link, factual-status and publication checks rather than a fabricated runtime test pass.
 
 ## Execution boundaries
