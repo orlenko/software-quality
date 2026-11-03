@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "repository": "orlenko/software-quality",
+  "execution": {
+    "trusted_local": false,
+    "isolation": "unavailable",
+    "checks": [
+      {
+        "id": "source-suite",
+        "argv": ["python3", "-I", "-S", "tools/test.py"],
+        "timeout_seconds": 600,
+        "max_log_bytes": 1048576,
+        "effects": [
+          "Create and remove invented disposable Git repositories, fixture archives and helper processes; fake inference only, no provider or private inputs"
+        ]
+      }
+    ]
+  },
+  "reviewer": {
+    "protocol": "recorded-v1",
+    "require_distinct_identities": true,
+    "routes": [
+      {
+        "id": "toolkit-independent-source",
+        "reviewer_id": "toolkit-independent-reviewer",
+        "boundary": {
+          "read_only": true,
+          "enforced": true,
+          "paths": "tracked-source",
+          "tools": ["source-read", "diff-read"],
+          "network": false,
+          "disclosure": "public-source"
+        }
+      }
+    ]
+  },
+  "references": {
+    "instructions": "AGENTS.md",
+    "architecture": "docs/toolkit-design.md",
+    "threat_model": "docs/toolkit-self-adoption.md",
+    "integration": "docs/toolkit-self-adoption.md"
+  }
+}

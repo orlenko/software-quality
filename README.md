@@ -30,6 +30,10 @@ Cache outputs must be outside the toolkit; an install archive may live inside it
 
 ## Start here
 
+The toolkit's own [pinned inspection setup](docs/toolkit-self-adoption.md) is a
+partial self-adoption: required target checks and authentic reviewer evidence stay
+incomplete. It uses an approved outside-target R2 bootstrap, not head-side code.
+
 ```sh
 git clone https://github.com/orlenko/software-quality.git
 cd software-quality
