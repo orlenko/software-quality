@@ -85,8 +85,9 @@ by this lock; live API/model/account/spend and reviewer identity/context qualifi
 require their own approval/evidence. No private media/credentials, provider calls,
 global registration, deployment or app restart are part of this setup.
 
-Initial actual installation and metadata results will be recorded separately from
-the design expectations, with sanitized source/config/lock/report identities only.
-Raw report bodies and outside paths stay private. The initial setup and any final
-documentation leaf require independent affected review before normal integration;
-final metadata must identify the actual integrated commit and clean checkout.
+The [initial observed evidence](reviews/toolkit-self-adoption-v01.md) records the
+reviewed setup commit, actual installation and metadata results separately from
+the design expectations. It publishes sanitized identities only. Raw reports and
+outside paths stay private. Any final documentation leaf receives independent
+affected review; final metadata identifies the actual integrated commit and clean
+checkout rather than rebinding the initial reports.
