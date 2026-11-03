@@ -139,6 +139,12 @@ boundary is unavailable, retain incomplete evidence instead of inventing an
 attestation. A local viewer sending private pixels into a hosted context is still
 disclosure; source-review authority alone does not approve that.
 
+The separate [source review controller candidate](docs/source-review-controller.md)
+can produce bounded source-review witnesses after explicit public-source API
+approval. It is outside the existing artifacts and does not generate independent
+attestations or enable consumer execution. Its offline test command is documented
+there.
+
 ```sh
 RESPONSE=/path/to/private/independent-review.json
 RESPONSE_DIGEST=REPLACE_WITH_INDEPENDENTLY_APPROVED_RESPONSE_SHA256
