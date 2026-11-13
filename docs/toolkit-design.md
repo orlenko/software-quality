@@ -14,11 +14,9 @@ The desired experience is `/quality` or `$cmd_quality` resolving the current PR 
 
 Keep the first release to configuration validation, exact-diff inspection, trusted local checks, one independent review route, and a structured evidence report. Start with one general code-review lens and the existing design-review lens; add specialist routing only where pilots show that it catches missed defects. Do not start with a fleet scheduler, database, dashboard, automatic fixes, merge controller, hosted service, or telemetry.
 
-The subsequent [manual review workflow v0.2](review-workflow.md) supplements
-policy0.1 with small-change guidance, risk-selected role instructions and an
-independent adjudicator. This repository adopts the manual process explicitly.
-Automated specialist dispatch, model effectiveness and live permission enforcement
-remain unimplemented/unqualified; existing runtime/schema/pins are unchanged.
+The [review and test process v0.3](process.md) is the manual process this
+repository follows. It replaced the manual review workflow v0.2 on 2026-11-13.
+The runner stays a pilot here; consumer repositories are not asked to adopt it.
 
 Conceptual commands for the broader design; see the README for current Python entry points:
 

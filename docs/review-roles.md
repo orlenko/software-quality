@@ -1,6 +1,8 @@
 # Shared review role instructions
 
-Use with the [manual workflow](review-workflow.md). These are newly authored focus
+Use with the [review and test process v0.3](process.md). A change gets one general
+reviewer; a specialist checklist below is used only where the process or the
+repository's block names one for the surface being changed. These are newly authored focus
 checklists for authorized independent reviewers, not tool permissions or proof of
 enforcement. Apply the accepted base rules and the repository's actual threat model.
 Use its existing approved design-review route rather than duplicating a persona.
@@ -91,6 +93,10 @@ substitute for the workflow or required domain evaluation. Keep unavailable
 product evidence explicit without inventing private fixtures or user approval.
 
 ## Review adjudication
+
+Process v0.3 has no adjudicator below tier A: the author answers each rejected
+finding in one line, and the owner decides when the author rejects a blocker.
+The rest of this section applies to tier A only.
 
 Use a reviewer separate from the implementer and report authors. Read all reports
 and their exact-source/completeness records. Verify evidence, preserve original

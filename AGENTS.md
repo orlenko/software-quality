@@ -18,16 +18,19 @@ Ideas may inform new work; code, prompts and fixtures from other projects requir
 
 ## Design and review gates
 
-Before nontrivial implementation, write the user problem, observable acceptance criteria, smallest alternative, responsibilities, data effects, failure behavior and test plan. Obtain an independent design critique and record the response. Keep architecture and runtime choices in short decision records under `docs/decisions/`.
+This repository follows the [review and test process v0.3](docs/process.md), approved by the owner on 2026-11-13 ([decision](docs/decisions/0011-lighter-review-process.md)). It replaces the manual review workflow v0.2 here. Read it before changing anything.
 
-Every code change receives an independent adversarial review before integration. Findings need a reachable scenario and consequence. Fix valid blockers and re-review affected fixes; track deferred nonblocking work. Review changes to the policy and runner against the previously accepted rules, not rules introduced by the change itself. The first implementation uses a separately recorded bootstrap review.
+Local facts for this repository:
 
-This repository adopts the [manual review workflow v0.2](docs/review-workflow.md)
-for planning small increments, selecting review lenses and reconciling findings.
-Its manual source-process adoption does not change pinned runtime policy0.1,
-activate reviewers, or establish an authentic enforced reviewer route.
+- **Tiers.** There is no sensitive-path list here today, so code and configuration changes are C and Markdown-only changes are Docs. The runner is a pilot with no consumer route; when it gains one, the owner adds a path list.
+- **Process text.** A change to `docs/process.md` or to this section needs the owner's approval before it is merged. Do not follow the review, re-review, retest, record or adoption rules in `docs/development-standard.md`; v0.3 replaced them.
+- **Frozen file.** `docs/development-standard.md` is embedded in the runner package as policy 0.1 with a recorded digest. Do not edit it; put process changes in `docs/process.md`.
+- **Design.** A new module, dependency, stored format or external effect gets a short design note under `docs/decisions/` and one independent critique before code.
+- **Reviewer.** One independent adversarial review of the diff per change, by a fresh reviewer that did not write it.
+- **Tests.** Focused: `python3 -I -S tools/test.py --match <regex>`; full, once on the final head: `python3 -I -S tools/test.py`. Markdown-only changes get a link, factual-status and publication check instead.
+- **Owner decisions about process** are added below as dated lines.
 
-Run the safe checks appropriate to the change, bind results to the reviewed tree, and report failures and missing evidence honestly. Use a documented manual check when automation is unsuitable. Documentation-only work needs link, factual-status and publication checks rather than a fabricated runtime test pass.
+2026-11-13: the owner approved process v0.3 for this repository and for the consumer repositories whose `AGENTS.md` points to it.
 
 ## Execution boundaries
 
