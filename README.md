@@ -34,17 +34,17 @@ The toolkit's own [pinned inspection setup](docs/toolkit-self-adoption.md) is a
 partial self-adoption: required target checks and authentic reviewer evidence stay
 incomplete. It uses an approved outside-target R2 bootstrap, not head-side code.
 
-The source-owned [manual review workflow v0.2](docs/review-workflow.md) adds strong
-small-PR guidance, specialist review lenses, an independent bug hunt and finding
-adjudication. It is a manual supplement to policy0.1; other repositories adopt it
-explicitly. Automated orchestration and live reviewer activation are separate.
+The [review and test process v0.3](docs/process.md) is the current manual process:
+a tier from the changed files, one review round, capped fix re-reviews, the full
+suite once on the final head, and a short record. It replaces the manual review
+workflow v0.2. Other repositories adopt it explicitly through their own `AGENTS.md`.
 
 ```sh
 git clone https://github.com/orlenko/software-quality.git
 cd software-quality
 ```
 
-Read [AGENTS.md](AGENTS.md), then [HANDOFF.md](HANDOFF.md). The candidate [development standard](docs/development-standard.md) and [toolkit design](docs/toolkit-design.md) describe the intended behavior.
+Read [AGENTS.md](AGENTS.md) and the [review and test process v0.3](docs/process.md), then [HANDOFF.md](HANDOFF.md). The [toolkit design](docs/toolkit-design.md) describes the runner's intended behavior. The candidate [development standard](docs/development-standard.md) is kept unchanged as runner policy 0.1; its review, re-review, retest, record and adoption rules were replaced by v0.3.
 
 ## Safe tests and build
 

@@ -9,6 +9,8 @@ and [bootstrap evidence](docs/reviews/bootstrap-v01.md) for its actual commands,
 verification and limitations. The original milestone below remains historical
 context; no release or consumer adoption follows from source integration.
 
+Process update, 2026-11-13: the owner adopted the [review and test process v0.3](docs/process.md). Where the notes below speak of a named adjudicator, repeated adoption demonstrations or re-review without a cap, v0.3 governs. The runner stays a pilot in this repository; consumers are not asked to adopt it.
+
 ## User goal
 
 Several personal software projects are developed concurrently by humans and agents coordinating through an orchestra. Their quality processes vary. Maintain shared development rules and reusable quality tooling in one public, tagged repository so improvements can be made consistently, without copying the full policy into every project.
